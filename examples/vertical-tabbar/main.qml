@@ -20,19 +20,27 @@ Page {
     height: 800
 
     property int number_of_items: 50
+    property int item_height: 30 // was 21
 
+    // To place in VerticalTabBar.qml
     TabBar {
         id: control
         width: 200
-        height: parent.height
 
+        // ! first/last item can be half clipped for some item height ???
+        height: parent.height // - 10
+        anchors.verticalCenter: parent.verticalCenter
+
+        // https://doc.qt.io/qt-6/qml-qtquick-listview.html
         contentItem: ListView {
             model: control.contentModel
             currentIndex: control.currentIndex
 
             spacing: control.spacing
             orientation: ListView.Vertical
+            // the contents can not be dragged beyond the boundary of the flickable, and flicks will not overshoot
             boundsBehavior: Flickable.StopAtBounds
+            // allows flicking vertically if the contentHeight is greater than the height of the Flickable
             flickableDirection: Flickable.AutoFlickIfNeeded
             snapMode: ListView.SnapToItem
 
@@ -45,10 +53,11 @@ Page {
         Repeater {
             model: number_of_items
 
+            // To place in VerticalTabButton.qml
             TabButton {
                 id: control2
-                width: control.width // else width is divide by the number of items
-                text: "tab blabla blabla %1".arg(model.index)
+                width: control.width // ! else width is divided by the number of items, due to hardcoded horizontal behaviour
+                text: "tab blabla blabla %1".arg(model.index + 1)
 
                 contentItem: IconLabel {
                     spacing: control2.spacing
@@ -63,7 +72,7 @@ Page {
 
                 background: Rectangle {
                     y: control2.checked || control2.TabBar.position !== T.TabBar.Header ? 0 : 2
-                    implicitHeight: 21
+                    implicitHeight: item_height
                     height: control2.height - (control2.checked ? 0 : 2)
 
                     border.color: Qt.lighter(Fusion.outline(control2.palette), 1.1)
@@ -103,7 +112,7 @@ Page {
             Item {
                 Label {
                     anchors.centerIn: parent
-                    text: "tab %1".arg(model.index)
+                    text: "tab %1".arg(model.index + 1)
                     font.pixelSize: 50
                 }
             }
