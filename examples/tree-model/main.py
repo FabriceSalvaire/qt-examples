@@ -37,20 +37,21 @@ class TreeItem:
     ##############################################
 
     # parent_item
+    @property
     def parent(self):
         return self._parent_item
 
     ##############################################
 
     # append_child
-    def insert_children(self, position: int, count: int, columns: int) -> bool:
-        if position < 0 or position > len(self._child_items):
-            return False
-        for row in range(count):
-            data = [None] * columns
-            item = TreeItem(data.copy(), self)
-            self._child_items.insert(position, item)
-        return True
+    def insert_children(self, position: int, number_of_columns: int, count: int = 1) -> bool:
+        if 0 <= position <= len(self._child_items):
+            for row in range(count):
+                data = [None] * number_of_columns
+                item = TreeItem(data, self)
+                self._child_items.insert(position, item)
+            return True
+        return False
 
     ##############################################
 
@@ -61,23 +62,27 @@ class TreeItem:
 
     ##############################################
 
-    def child_count(self) -> int:
+    @property
+    def number_of_childs(self) -> int:
         return len(self._child_items)
 
     ##############################################
 
-    def child_number(self) -> int:
+    @property
+    def child_index(self) -> int:
         if self._parent_item:
             return self._parent_item._child_items.index(self)
         return 0
 
     ##############################################
 
-    def column_count(self) -> int:
+    @property
+    def number_of_columns(self) -> int:
         return len(self._item_data)
 
     ##############################################
 
+    @property
     def last_child(self):
         return self._child_items[-1] if self._child_items else None
 
@@ -90,13 +95,13 @@ class TreeItem:
 
     ##############################################
 
-    def insert_columns(self, position: int, columns: int) -> bool:
+    def insert_columns(self, position: int, number_of_columns: int) -> bool:
         if position < 0 or position > len(self._item_data):
             return False
-        for column in range(columns):
+        for column in range(number_of_columns):
             self._item_data.insert(position, None)
         for child in self._child_items:
-            child.insert_columns(position, columns)
+            child.insert_columns(position, number_of_columns)
         return True
 
     ##############################################
@@ -110,22 +115,22 @@ class TreeItem:
 
     ##############################################
 
-    def remove_columns(self, position: int, columns: int) -> bool:
-        if position < 0 or position + columns > len(self._item_data):
+    def remove_columns(self, position: int, number_of_columns: int) -> bool:
+        if position < 0 or position + number_of_columns > len(self._item_data):
             return False
-        for column in range(columns):
+        for column in range(number_of_columns):
             self._item_data.pop(position)
         for child in self._child_items:
-            child.remove_columns(position, columns)
+            child.remove_columns(position, number_of_columns)
         return True
 
     ##############################################
 
-    def set_data(self, column: int, value):
-        if column < 0 or column >= len(self._item_data):
-            return False
-        self._item_data[column] = value
-        return True
+    def set_data(self, column: int, value) -> bool:
+        if 0 <= column < len(self._item_data):
+            self._item_data[column] = value
+            return True
+        return False
 
     ##############################################
 
@@ -151,23 +156,23 @@ class TreeModel(QAbstractItemModel):
 
     def __init__(self, headers: list, data: str, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
-        self._root_data = headers
+        self._root_data = headers   # Fixem: root_data is unused
         self._root_item = TreeItem(self._root_data.copy())
-        self._setup_model_data(data.split('\n'), self._root_item)
+        self._setup_model_data(data, self._root_item)
 
     ##############################################
 
     def columnCount(self, parent: QModelIndex = None) -> int:
         # if parent.isValid():
-        #     return static_cast<TreeItem*>(parent.internalPointer())->columnCount()
-        return self._root_item.column_count()
+        #     return parent.internalPointer().number_of_columns
+        return self._root_item.number_of_columns
 
     ##############################################
 
     def data(self, index: QModelIndex, role: Optional[int] = None) -> Any:   # QVariant
         if not index.isValid():
             return None
-        if role != Qt.DisplayRole and role != Qt.EditRole:
+        if role not in (Qt.DisplayRole, Qt.EditRole):
             return None
         item: TreeItem = self._get_item(index)
         return item.data(index.column())
@@ -186,6 +191,7 @@ class TreeModel(QAbstractItemModel):
             item: TreeItem = index.internalPointer()
             if item:
                 return item
+        # Fixme: ok ???
         return self._root_item
 
     ##############################################
@@ -226,11 +232,11 @@ class TreeModel(QAbstractItemModel):
     def insertColumns(
             self,
             position: int,
-            columns: int,
+            number_of_columns: int,
             parent: QModelIndex = QModelIndex(),
     ) -> bool:
-        self.beginInsertColumns(parent, position, position + columns - 1)
-        success: bool = self._root_item.insert_columns(position, columns)
+        self.beginInsertColumns(parent, position, position + number_of_columns - 1)
+        success: bool = self._root_item.insert_columns(position, number_of_columns)
         self.endInsertColumns()
         return success
 
@@ -247,8 +253,8 @@ class TreeModel(QAbstractItemModel):
             return False
 
         self.beginInsertRows(parent, position, position + rows - 1)
-        column_count = self._root_item.column_count()
-        success: bool = parent_item.insert_children(position, rows, column_count)
+        number_of_columns = self._root_item.number_of_columns
+        success: bool = parent_item.insert_children(position, number_of_columns, rows)
         self.endInsertRows()
 
         return success
@@ -261,27 +267,27 @@ class TreeModel(QAbstractItemModel):
 
         child_item: TreeItem = self._get_item(index)
         if child_item:
-            parent_item: TreeItem = child_item.parent()
+            parent_item: TreeItem = child_item.parent
         else:
             parent_item = None
 
         if parent_item == self._root_item or not parent_item:
             return QModelIndex()
 
-        return self.createIndex(parent_item.child_number(), 0, parent_item)
+        return self.createIndex(parent_item.child_index, 0, parent_item)
 
     ##############################################
 
     def removeColumns(
             self,
             position: int,
-            columns: int,
+            number_of_columns: int,
             parent: QModelIndex = QModelIndex(),
     ) -> bool:
-        self.beginRemoveColumns(parent, position, position + columns - 1)
-        success: bool = self._root_item.remove_columns(position, columns)
+        self.beginRemoveColumns(parent, position, position + number_of_columns - 1)
+        success: bool = self._root_item.remove_columns(position, number_of_columns)
         self.endRemoveColumns()
-        if self._root_item.column_count() == 0:
+        if self._root_item.number_of_columns == 0:
             self.removeRows(0, self.rowCount())
         return success
 
@@ -311,7 +317,7 @@ class TreeModel(QAbstractItemModel):
         if not parent_item:
             return 0
 
-        return parent_item.child_count()
+        return parent_item.number_of_childs
 
     ##############################################
 
@@ -342,39 +348,40 @@ class TreeModel(QAbstractItemModel):
 
     ##############################################
 
-    def _setup_model_data(self, lines: list, parent: TreeItem) -> None:
+    def _setup_model_data(self, data: str, parent: TreeItem) -> None:
         parents = [parent]
         indentations = [0]
-
-        for line in lines:
+        for line in data.split('\n'):
             line = line.rstrip()
             if line and '\t' in line:
-
+                # process line
                 position = 0
                 while position < len(line):
                     if line[position] != ' ':
                         break
                     position += 1
+                _ = line[position:].split('\t')
+                column_data = [string for string in _ if string]
 
-                column_data = line[position:].split('\t')
-                column_data = [string for string in column_data if string]
-
+                # handle indentation
                 if position > indentations[-1]:
-                    if parents[-1].child_count() > 0:
-                        parents.append(parents[-1].last_child())
+                    if parents[-1].number_of_childs > 0:
+                        parents.append(parents[-1].last_child)
                         indentations.append(position)
                 else:
                     while position < indentations[-1] and parents:
                         parents.pop()
                         indentations.pop()
 
+                # insert data
                 parent: TreeItem = parents[-1]
-                col_count = self._root_item.column_count()
-                parent.insert_children(parent.child_count(), 1, col_count)
-
-                for column in range(len(column_data)):
-                    child = parent.last_child()
-                    child.set_data(column, column_data[column])
+                parent.insert_children(
+                    position=parent.number_of_childs,
+                    number_of_columns=self._root_item.number_of_columns,
+                )
+                for i, value in enumerate(column_data):
+                    child = parent.last_child
+                    child.set_data(i, value)
 
     ##############################################
 
@@ -397,6 +404,7 @@ class CustomCode:
         headers = ['Title', 'Description']
         # tree is encoded in title indentation
         self._model = TreeModel(headers, path.read_text())
+        print(self._model)
         context.setContextProperty('tree_model', self._model)
 
 ####################################################################################################
