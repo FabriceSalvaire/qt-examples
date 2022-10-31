@@ -13,7 +13,9 @@ Just a repository that contains examples in [Python](https://www.python.org) for
 
 **Look at the file headers for the corresponding license.**
 
-* Python wrapper examples are installed with PySide6 (1) but not for PyQt6. (1) in the *examples* directory
+* PySide6 examples are installed with the Python package in the *examples* directory, use
+  `print(PySide6.__file__)` to get the parent path in your installation.
+* PyQt6 examples are available in the source package.
 * [Qt examples](https://doc.qt.io/qt-6/qtexamples.html) are installed with the Qt installer.
 
 ## Contents Map
