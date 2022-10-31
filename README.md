@@ -7,6 +7,8 @@ Just a repository that contains examples in [Python](https://www.python.org) for
 
 ## Contents
 
+The directory *examples* contains examples which are not part of PySide6.
+
 **For convenience**, this repository contains a copy of the examples of
 [PyQt6](https://riverbankcomputing.com/software/pyqt) and
 [PySide6](https://doc.qt.io/qtforpython/examples/index.html).
@@ -20,7 +22,15 @@ Just a repository that contains examples in [Python](https://www.python.org) for
 
 ## Contents Map
 
-* [Examples with QML](https://github.com/FabriceSalvaire/qt-python-examples/blob/main/qml-map.md)
+* [PySide6/PyQt6 Examples with QML](https://github.com/FabriceSalvaire/qt-python-examples/blob/main/qml-map.md)
+
+## How to display Standalone QML file
+
+Use the **qml** or **pyside6-qml** command to display a standalone QML file:
+
+```
+pyside6-qml vertical-tabbar/main.qml
+```
 
 # Other Repositories on the Web
 
