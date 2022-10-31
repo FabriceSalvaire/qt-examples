@@ -1,3 +1,6 @@
+// Copyright (C) 2022 Fabrice Salvaire
+// SPDX-License-Identifier: BSD-3-Clause
+
 import QtQuick
 
 Item {
