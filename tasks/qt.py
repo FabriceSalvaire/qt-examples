@@ -110,6 +110,11 @@ def find_qml(ctx, follow=False):
             filename = Path(filename)
             if filename.suffix == '.qml':
                 directories.add(root.relative_to(SOURCE_PATH))
+
+    pyqt = [_ for _ in directories if 'PyQt' in str(_)]
+    pyside = [_ for _ in directories if 'PySide' in str(_)]
     BASE_URL = 'https://github.com/FabriceSalvaire/qt-python-examples/tree/main/'
-    for _ in sorted(directories):
-        print(f'* [{_}]({BASE_URL}{_})')
+    for wrapper in (pyside, pyqt):
+        for _ in sorted(wrapper):
+            title = str(_).replace('/', ' / ')
+            print(f'* [{title}]({BASE_URL}{_})')
