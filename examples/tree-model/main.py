@@ -25,6 +25,17 @@ os.environ['QT_LOGGING_RULES'] = ';'.join((
 
 ####################################################################################################
 
+def dprint(*args):
+    parts = []
+    for arg in args:
+        match arg:
+            case QModelIndex():
+                arg = f'QModelIndex ({arg.row()}, {arg.column()})'   # parent ?
+        parts.append(str(arg))
+    print(' '.join(parts))
+
+####################################################################################################
+
 class TreeItem:
 
     ##############################################
@@ -41,9 +52,9 @@ class TreeItem:
         return len(self._data)
 
     def data(self, column: int) -> Any:   # QVariant
-        if column < 0 or column >= len(self._data):
-            return None
-        return self._data[column]
+        if 0 <= column < len(self._data):
+            return self._data[column]
+        return None
 
     ##############################################
 
@@ -144,13 +155,15 @@ class TreeModel(QAbstractItemModel):
 
     # https://doc.qt.io/qt-6/qabstractitemmodel.html
 
+    # Fixme: it is unclear how the root/header node is handled
+
     ##############################################
 
     def __init__(self, headers: list, data: str, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
-        self._root_data = headers   # Fixem: root_data is unused
-        self._root_item = TreeItem(self._root_data.copy())
-        self._setup_model_data(data, self._root_item)
+        self._root_data = headers   # Fixme: root_data is unused
+        self._root = TreeItem(self._root_data.copy())
+        self._setup_model_data(data, self._root)
 
     ##############################################
 
@@ -161,15 +174,16 @@ class TreeModel(QAbstractItemModel):
             if item:
                 return item
         # else
-        return self._root_item
+        return self._root
 
     ##############################################
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
-        '''Returns the number of rows under the given parent.  When the parent is valid it means that
+        """Returns the number of rows under the given parent.  When the parent is valid it means that
         rowCount is returning the number of children of parent.
 
-        '''
+        """
+        dprint('- rowCount', parent)
         # https://doc.qt.io/qt-6/qabstractitemmodel.html#rowCount
         # childs are on column = 0
         if parent.isValid() and parent.column() > 0:
@@ -185,7 +199,8 @@ class TreeModel(QAbstractItemModel):
     def columnCount(self, parent: QModelIndex = None) -> int:
         # if parent.isValid():
         #     return parent.internalPointer().number_of_columns
-        return self._root_item.number_of_columns
+        dprint('- columnCount', parent)
+        return self._root.number_of_columns
 
     ##############################################
 
@@ -195,14 +210,18 @@ class TreeModel(QAbstractItemModel):
             orientation: Qt.Orientation,
             role: int = Qt.DisplayRole,
     ) -> Any:   # QVariant
+        """Returns the data for the given role and section in the header with the specified orientation."""
+        # https://doc.qt.io/qt-6/qabstractitemmodel.html#headerData
         # root item holds header data
+        dprint('>>> headerData')
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self._root_item.data(section)
+            return self._root.data(section)
         return None
 
     ##############################################
 
     def data(self, index: QModelIndex, role: Optional[int] = None) -> Any:   # QVariant
+        dprint('> data', index, role)
         if not index.isValid():
             return None
         if role not in (Qt.DisplayRole, Qt.EditRole):
@@ -232,7 +251,7 @@ class TreeModel(QAbstractItemModel):
     ) -> bool:
         if role != Qt.EditRole or orientation != Qt.Horizontal:
             return False
-        result: bool = self._root_item.set_data(section, value)
+        result: bool = self._root.set_data(section, value)
         if result:
             self.headerDataChanged.emit(orientation, section, section)
         return result
@@ -241,6 +260,7 @@ class TreeModel(QAbstractItemModel):
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
         # https://doc.qt.io/qt-6/qabstractitemmodel.html#flags
+        dprint('flags', index)
         if not index.isValid():
             return Qt.NoItemFlags
         return Qt.ItemIsEditable | QAbstractItemModel.flags(self, index)
@@ -253,6 +273,9 @@ class TreeModel(QAbstractItemModel):
             column: int,
             parent: QModelIndex = QModelIndex(),
     ) -> QModelIndex:
+        """Returns the index of the item in the model specified by the given row, column and parent index."""
+        # https://doc.qt.io/qt-6/qabstractitemmodel.html#index
+        dprint('- index', row, column, parent)
         # if (!hasIndex(row, column, parent))
         if parent.isValid() and parent.column() != 0:
             return QModelIndex()
@@ -269,7 +292,12 @@ class TreeModel(QAbstractItemModel):
     ##############################################
 
     def parent(self, index: QModelIndex = QModelIndex()) -> QModelIndex:
+        """Returns the parent of the model item with the given index. If the item has no parent, an invalid
+        QModelIndex is returned.
+
+        """
         # https://doc.qt.io/qt-6/qabstractitemmodel.html#parent
+        dprint('- parent', index)
         if not index.isValid():
             return QModelIndex()
 
@@ -279,7 +307,7 @@ class TreeModel(QAbstractItemModel):
         else:
             parent_item = None
 
-        if parent_item == self._root_item or not parent_item:
+        if parent_item == self._root or not parent_item:
             return QModelIndex()
 
         return self.createIndex(parent_item.child_index, 0, parent_item)
@@ -292,12 +320,13 @@ class TreeModel(QAbstractItemModel):
             rows: int,
             parent: QModelIndex = QModelIndex(),
     ) -> bool:
+        dprint('! insertRows', position, rows, parent)
         parent_item: TreeItem = self._get_item(parent)
         if not parent_item:
             return False
 
         self.beginInsertRows(parent, position, position + rows - 1)
-        number_of_columns = self._root_item.number_of_columns
+        number_of_columns = self._root.number_of_columns
         success: bool = parent_item.insert_child(position, number_of_columns, rows)
         self.endInsertRows()
 
@@ -312,7 +341,7 @@ class TreeModel(QAbstractItemModel):
             parent: QModelIndex = QModelIndex(),
     ) -> bool:
         self.beginInsertColumns(parent, position, position + number_of_columns - 1)
-        success: bool = self._root_item.insert_columns(position, number_of_columns)
+        success: bool = self._root.insert_columns(position, number_of_columns)
         self.endInsertColumns()
         return success
 
@@ -325,9 +354,9 @@ class TreeModel(QAbstractItemModel):
             parent: QModelIndex = QModelIndex(),
     ) -> bool:
         self.beginRemoveColumns(parent, position, position + number_of_columns - 1)
-        success: bool = self._root_item.remove_columns(position, number_of_columns)
+        success: bool = self._root.remove_columns(position, number_of_columns)
         self.endRemoveColumns()
-        if self._root_item.number_of_columns == 0:
+        if self._root.number_of_columns == 0:
             self.removeRows(0, self.rowCount())
         return success
 
@@ -378,7 +407,7 @@ class TreeModel(QAbstractItemModel):
                 parent: TreeItem = parents[-1]
                 parent.insert_child(
                     position=parent.number_of_childs,
-                    number_of_columns=self._root_item.number_of_columns,
+                    number_of_columns=self._root.number_of_columns,
                 )
                 for i, value in enumerate(column_data):
                     child = parent.last_child
@@ -395,7 +424,7 @@ class TreeModel(QAbstractItemModel):
     ##############################################
 
     def __repr__(self) -> str:
-        return self._repr_recursion(self._root_item)
+        return self._repr_recursion(self._root)
 
 ####################################################################################################
 
