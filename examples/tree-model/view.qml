@@ -16,7 +16,7 @@ Item {
         id: tree_view
         anchors.fill: parent
         anchors.margins: 20
-        model: tree_model
+        model: application.model
 
         delegate: Item {
             id: tree_delegate

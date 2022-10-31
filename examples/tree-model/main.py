@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional, Any
 import sys
 
-from PySide6.QtCore import QObject, QAbstractItemModel, QModelIndex, Qt, QUrl
+from PySide6.QtCore import QObject, QAbstractItemModel, QModelIndex, Qt, QUrl, Property, Slot
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQuick import QQuickView
 from PySide6.QtQml import QQmlContext
@@ -30,105 +30,105 @@ class TreeItem:
     ##############################################
 
     def __init__(self, data: list, parent: Optional['TreeItem'] = None) -> None:
-        self._item_data = data
-        self._parent_item = parent
-        self._child_items = []
+        self._data = data
+        self._parent = parent
+        self._childs = []
 
     ##############################################
 
     # parent_item
     @property
     def parent(self):
-        return self._parent_item
+        return self._parent
 
     ##############################################
 
     # append_child
     def insert_children(self, position: int, number_of_columns: int, count: int = 1) -> bool:
-        if 0 <= position <= len(self._child_items):
+        if 0 <= position <= len(self._childs):
             for row in range(count):
                 data = [None] * number_of_columns
                 item = TreeItem(data, self)
-                self._child_items.insert(position, item)
+                self._childs.insert(position, item)
             return True
         return False
 
     ##############################################
 
     def child(self, row: int) -> 'TreeItem':
-        if 0 <= row < len(self._child_items):
-            return self._child_items[row]
+        if 0 <= row < len(self._childs):
+            return self._childs[row]
         return None
 
     ##############################################
 
     @property
     def number_of_childs(self) -> int:
-        return len(self._child_items)
+        return len(self._childs)
 
     ##############################################
 
     @property
     def child_index(self) -> int:
-        if self._parent_item:
-            return self._parent_item._child_items.index(self)
+        if self._parent:
+            return self._parent._childs.index(self)
         return 0
 
     ##############################################
 
     @property
     def number_of_columns(self) -> int:
-        return len(self._item_data)
+        return len(self._data)
 
     ##############################################
 
     @property
     def last_child(self):
-        return self._child_items[-1] if self._child_items else None
+        return self._childs[-1] if self._childs else None
 
     ##############################################
 
     def data(self, column: int) -> Any:   # QVariant
-        if column < 0 or column >= len(self._item_data):
+        if column < 0 or column >= len(self._data):
             return None
-        return self._item_data[column]
+        return self._data[column]
 
     ##############################################
 
     def insert_columns(self, position: int, number_of_columns: int) -> bool:
-        if position < 0 or position > len(self._item_data):
+        if position < 0 or position > len(self._data):
             return False
         for column in range(number_of_columns):
-            self._item_data.insert(position, None)
-        for child in self._child_items:
+            self._data.insert(position, None)
+        for child in self._childs:
             child.insert_columns(position, number_of_columns)
         return True
 
     ##############################################
 
     def remove_children(self, position: int, count: int) -> bool:
-        if position < 0 or position + count > len(self._child_items):
+        if position < 0 or position + count > len(self._childs):
             return False
         for row in range(count):
-            self._child_items.pop(position)
+            self._childs.pop(position)
         return True
 
     ##############################################
 
     def remove_columns(self, position: int, number_of_columns: int) -> bool:
-        if position < 0 or position + number_of_columns > len(self._item_data):
+        if position < 0 or position + number_of_columns > len(self._data):
             return False
         for column in range(number_of_columns):
-            self._item_data.pop(position)
-        for child in self._child_items:
+            self._data.pop(position)
+        for child in self._childs:
             child.remove_columns(position, number_of_columns)
         return True
 
     ##############################################
 
     def set_data(self, column: int, value) -> bool:
-        if 0 <= column < len(self._item_data):
-            self._item_data[column] = value
+        if 0 <= column < len(self._data):
+            self._data[column] = value
             return True
         return False
 
@@ -136,15 +136,15 @@ class TreeItem:
 
     def __repr__(self) -> str:
         result = f'<treeitem.TreeItem at 0x{id(self):x}'
-        for d in self._item_data:
+        for d in self._data:
             result += f" '{d}'" if d else ' <None>'
-        result += f', {len(self._child_items)} children>'
+        result += f', {len(self._childs)} children>'
         return result
 
     ##############################################
 
     # def row(self) -> int:
-    #     if self._parent_item:
+    #     if self._parent:
     #         return m_parentItem->m_childItems.indexOf(const_cast<TreeItem*>(this))
     #     return 0
 
@@ -387,7 +387,7 @@ class TreeModel(QAbstractItemModel):
 
     def _repr_recursion(self, item: TreeItem, indent: int = 0) -> str:
         result = ' ' * indent + repr(item) + '\n'
-        for child in item._child_items:
+        for child in item._childs:
             result += self._repr_recursion(child, indent + 2)
         return result
 
@@ -398,14 +398,122 @@ class TreeModel(QAbstractItemModel):
 
 ####################################################################################################
 
-class CustomCode:
-    def __init__(self, context: QQmlContext) -> None:
+class QmlApplication(QObject):
+
+    ##############################################
+
+    def __init__(self) -> None:
+        super().__init__()
         path = Path(__file__).parent / 'default.txt'
         headers = ['Title', 'Description']
         # tree is encoded in title indentation
         self._model = TreeModel(headers, path.read_text())
         print(self._model)
-        context.setContextProperty('tree_model', self._model)
+
+    ##############################################
+
+    @Property(QObject, constant=True)
+    def model(self) -> QObject:
+        return self._model
+
+    ##############################################
+
+    # @Slot()
+    # def insert_child(self) -> None:
+    #     selection_model = self.view.selectionModel()
+    #     index: QModelIndex = selection_model.currentIndex()
+    #     model: QAbstractItemModel = self.view.model()
+
+    #     if model.columnCount(index) == 0:
+    #         if not model.insertColumn(0, index):
+    #             return
+
+    #     if not model.insertRow(0, index):
+    #         return
+
+    #     for column in range(model.columnCount(index)):
+    #         child: QModelIndex = model.index(0, column, index)
+    #         model.setData(child, "[No data]", Qt.EditRole)
+    #         if not model.headerData(column, Qt.Horizontal):
+    #             model.setHeaderData(column, Qt.Horizontal, "[No header]",
+    #                                 Qt.EditRole)
+
+    #     selection_model.setCurrentIndex(
+    #         model.index(0, 0, index), QItemSelectionModel.ClearAndSelect
+    #     )
+    #     self.update_actions()
+
+    ##############################################
+
+    # @Slot()
+    # def insert_column(self) -> None:
+    #     model: QAbstractItemModel = self.view.model()
+    #     column: int = self.view.selectionModel().currentIndex().column()
+
+    #     changed: bool = model.insertColumn(column + 1)
+    #     if changed:
+    #         model.setHeaderData(column + 1, Qt.Horizontal, "[No header]",
+    #                             Qt.EditRole)
+
+    #     self.update_actions()
+
+    ##############################################
+
+    # @Slot()
+    # def insert_row(self) -> None:
+    #     index: QModelIndex = self.view.selectionModel().currentIndex()
+    #     model: QAbstractItemModel = self.view.model()
+    #     parent: QModelIndex = index.parent()
+
+    #     if not model.insertRow(index.row() + 1, parent):
+    #         return
+
+    #     self.update_actions()
+
+    #     for column in range(model.columnCount(parent)):
+    #         child: QModelIndex = model.index(index.row() + 1, column, parent)
+    #         model.setData(child, "[No data]", Qt.EditRole)
+
+    ##############################################
+
+    # @Slot()
+    # def remove_column(self) -> None:
+    #     model: QAbstractItemModel = self.view.model()
+    #     column: int = self.view.selectionModel().currentIndex().column()
+
+    #     if model.removeColumn(column):
+    #         self.update_actions()
+
+    ##############################################
+
+    # @Slot()
+    # def remove_row(self) -> None:
+    #     index: QModelIndex = self.view.selectionModel().currentIndex()
+    #     model: QAbstractItemModel = self.view.model()
+
+    #     if model.removeRow(index.row(), index.parent()):
+    #         self.update_actions()
+
+    ##############################################
+
+    # @Slot()
+    # def update_actions(self) -> None:
+    #     selection_model = self.view.selectionModel()
+    #     has_selection: bool = not selection_model.selection().isEmpty()
+    #     self.remove_row_action.setEnabled(has_selection)
+    #     self.remove_column_action.setEnabled(has_selection)
+
+    #     current_index = selection_model.currentIndex()
+    #     has_current: bool = current_index.isValid()
+    #     self.insert_row_action.setEnabled(has_current)
+    #     self.insert_column_action.setEnabled(has_current)
+
+    #     if has_current:
+    #         self.view.closePersistentEditor(current_index)
+    #         msg = f"Position: ({current_index.row()},{current_index.column()})"
+    #         if not current_index.parent().isValid():
+    #             msg += " in top level"
+    #         self.statusBar().showMessage(msg)
 
 ####################################################################################################
 
@@ -415,7 +523,8 @@ if __name__ == '__main__':
     context = view.rootContext()
     view.setResizeMode(QQuickView.SizeRootObjectToView)
 
-    custom_code = CustomCode(context)
+    qml_appplication = QmlApplication()
+    context.setContextProperty('application', qml_appplication)
 
     qml_filename = 'view.qml'
     qml_path = Path(__file__).resolve().parent.joinpath(qml_filename)
