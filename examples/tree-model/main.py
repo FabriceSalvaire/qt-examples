@@ -142,6 +142,8 @@ class TreeItem:
 
 class TreeModel(QAbstractItemModel):
 
+    # https://doc.qt.io/qt-6/qabstractitemmodel.html
+
     ##############################################
 
     def __init__(self, headers: list, data: str, parent: Optional[QObject] = None) -> None:
@@ -152,10 +154,51 @@ class TreeModel(QAbstractItemModel):
 
     ##############################################
 
+    def _get_item(self, index: QModelIndex = QModelIndex()) -> TreeItem:
+        # Return index -> item else root item
+        if index.isValid():
+            item: TreeItem = index.internalPointer()
+            if item:
+                return item
+        # else
+        return self._root_item
+
+    ##############################################
+
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        '''Returns the number of rows under the given parent.  When the parent is valid it means that
+        rowCount is returning the number of children of parent.
+
+        '''
+        # https://doc.qt.io/qt-6/qabstractitemmodel.html#rowCount
+        # childs are on column = 0
+        if parent.isValid() and parent.column() > 0:
+            return 0
+
+        parent_item: TreeItem = self._get_item(parent)
+        if not parent_item:
+            return 0
+        return parent_item.number_of_childs
+
+    ##############################################
+
     def columnCount(self, parent: QModelIndex = None) -> int:
         # if parent.isValid():
         #     return parent.internalPointer().number_of_columns
         return self._root_item.number_of_columns
+
+    ##############################################
+
+    def headerData(
+            self,
+            section: int,
+            orientation: Qt.Orientation,
+            role: int = Qt.DisplayRole,
+    ) -> Any:   # QVariant
+        # root item holds header data
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self._root_item.data(section)
+        return None
 
     ##############################################
 
@@ -169,32 +212,38 @@ class TreeModel(QAbstractItemModel):
 
     ##############################################
 
-    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
-        if not index.isValid():
-            return Qt.NoItemFlags
-        return Qt.ItemIsEditable | QAbstractItemModel.flags(self, index)
+    def setData(self, index: QModelIndex, value, role: int) -> bool:
+        if role != Qt.EditRole:
+            return False
+        item: TreeItem = self._get_item(index)
+        result: bool = item.set_data(index.column(), value)
+        if result:
+            self.dataChanged.emit(index, index, [Qt.DisplayRole, Qt.EditRole])
+        return result
 
     ##############################################
 
-    def _get_item(self, index: QModelIndex = QModelIndex()) -> TreeItem:
-        if index.isValid():
-            item: TreeItem = index.internalPointer()
-            if item:
-                return item
-        # Fixme: ok ???
-        return self._root_item
-
-    ##############################################
-
-    def headerData(
+    def setHeaderData(
             self,
             section: int,
             orientation: Qt.Orientation,
-            role: int = Qt.DisplayRole,
-    ) -> Any:   # QVariant
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self._root_item.data(section)
-        return None
+            value,
+            role: int = None,
+    ) -> bool:
+        if role != Qt.EditRole or orientation != Qt.Horizontal:
+            return False
+        result: bool = self._root_item.set_data(section, value)
+        if result:
+            self.headerDataChanged.emit(orientation, section, section)
+        return result
+
+    ##############################################
+
+    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+        # https://doc.qt.io/qt-6/qabstractitemmodel.html#flags
+        if not index.isValid():
+            return Qt.NoItemFlags
+        return Qt.ItemIsEditable | QAbstractItemModel.flags(self, index)
 
     ##############################################
 
@@ -219,16 +268,21 @@ class TreeModel(QAbstractItemModel):
 
     ##############################################
 
-    def insertColumns(
-            self,
-            position: int,
-            number_of_columns: int,
-            parent: QModelIndex = QModelIndex(),
-    ) -> bool:
-        self.beginInsertColumns(parent, position, position + number_of_columns - 1)
-        success: bool = self._root_item.insert_columns(position, number_of_columns)
-        self.endInsertColumns()
-        return success
+    def parent(self, index: QModelIndex = QModelIndex()) -> QModelIndex:
+        # https://doc.qt.io/qt-6/qabstractitemmodel.html#parent
+        if not index.isValid():
+            return QModelIndex()
+
+        child_item: TreeItem = self._get_item(index)
+        if child_item:
+            parent_item: TreeItem = child_item.parent
+        else:
+            parent_item = None
+
+        if parent_item == self._root_item or not parent_item:
+            return QModelIndex()
+
+        return self.createIndex(parent_item.child_index, 0, parent_item)
 
     ##############################################
 
@@ -251,20 +305,16 @@ class TreeModel(QAbstractItemModel):
 
     ##############################################
 
-    def parent(self, index: QModelIndex = QModelIndex()) -> QModelIndex:
-        if not index.isValid():
-            return QModelIndex()
-
-        child_item: TreeItem = self._get_item(index)
-        if child_item:
-            parent_item: TreeItem = child_item.parent
-        else:
-            parent_item = None
-
-        if parent_item == self._root_item or not parent_item:
-            return QModelIndex()
-
-        return self.createIndex(parent_item.child_index, 0, parent_item)
+    def insertColumns(
+            self,
+            position: int,
+            number_of_columns: int,
+            parent: QModelIndex = QModelIndex(),
+    ) -> bool:
+        self.beginInsertColumns(parent, position, position + number_of_columns - 1)
+        success: bool = self._root_item.insert_columns(position, number_of_columns)
+        self.endInsertColumns()
+        return success
 
     ##############################################
 
@@ -296,45 +346,6 @@ class TreeModel(QAbstractItemModel):
         success: bool = parent_item.remove_child(position, rows)
         self.endRemoveRows()
         return success
-
-    ##############################################
-
-    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
-        if parent.isValid() and parent.column() > 0:
-            return 0
-
-        parent_item: TreeItem = self._get_item(parent)
-        if not parent_item:
-            return 0
-
-        return parent_item.number_of_childs
-
-    ##############################################
-
-    def setData(self, index: QModelIndex, value, role: int) -> bool:
-        if role != Qt.EditRole:
-            return False
-        item: TreeItem = self._get_item(index)
-        result: bool = item.set_data(index.column(), value)
-        if result:
-            self.dataChanged.emit(index, index, [Qt.DisplayRole, Qt.EditRole])
-        return result
-
-    ##############################################
-
-    def setHeaderData(
-            self,
-            section: int,
-            orientation: Qt.Orientation,
-            value,
-            role: int = None,
-    ) -> bool:
-        if role != Qt.EditRole or orientation != Qt.Horizontal:
-            return False
-        result: bool = self._root_item.set_data(section, value)
-        if result:
-            self.headerDataChanged.emit(orientation, section, section)
-        return result
 
     ##############################################
 
@@ -410,24 +421,18 @@ class QmlApplication(QObject):
 
     # @Slot()
     # def insert_child(self) -> None:
-    #     selection_model = self.view.selectionModel()
-    #     index: QModelIndex = selection_model.currentIndex()
-    #     model: QAbstractItemModel = self.view.model()
-
+    #     index: QModelIndex = 
     #     if model.columnCount(index) == 0:
     #         if not model.insertColumn(0, index):
     #             return
-
     #     if not model.insertRow(0, index):
     #         return
-
     #     for column in range(model.columnCount(index)):
     #         child: QModelIndex = model.index(0, column, index)
     #         model.setData(child, "[No data]", Qt.EditRole)
     #         if not model.headerData(column, Qt.Horizontal):
     #             model.setHeaderData(column, Qt.Horizontal, "[No header]",
     #                                 Qt.EditRole)
-
     #     selection_model.setCurrentIndex(
     #         model.index(0, 0, index), QItemSelectionModel.ClearAndSelect
     #     )
@@ -437,29 +442,21 @@ class QmlApplication(QObject):
 
     # @Slot()
     # def insert_column(self) -> None:
-    #     model: QAbstractItemModel = self.view.model()
-    #     column: int = self.view.selectionModel().currentIndex().column()
-
     #     changed: bool = model.insertColumn(column + 1)
     #     if changed:
     #         model.setHeaderData(column + 1, Qt.Horizontal, "[No header]",
     #                             Qt.EditRole)
-
     #     self.update_actions()
 
     ##############################################
 
     # @Slot()
     # def insert_row(self) -> None:
-    #     index: QModelIndex = self.view.selectionModel().currentIndex()
-    #     model: QAbstractItemModel = self.view.model()
+    #     index: QModelIndex = 
     #     parent: QModelIndex = index.parent()
-
     #     if not model.insertRow(index.row() + 1, parent):
     #         return
-
     #     self.update_actions()
-
     #     for column in range(model.columnCount(parent)):
     #         child: QModelIndex = model.index(index.row() + 1, column, parent)
     #         model.setData(child, "[No data]", Qt.EditRole)
@@ -468,9 +465,6 @@ class QmlApplication(QObject):
 
     # @Slot()
     # def remove_column(self) -> None:
-    #     model: QAbstractItemModel = self.view.model()
-    #     column: int = self.view.selectionModel().currentIndex().column()
-
     #     if model.removeColumn(column):
     #         self.update_actions()
 
@@ -478,32 +472,9 @@ class QmlApplication(QObject):
 
     # @Slot()
     # def remove_row(self) -> None:
-    #     index: QModelIndex = self.view.selectionModel().currentIndex()
-    #     model: QAbstractItemModel = self.view.model()
-
+    #     index: QModelIndex = 
     #     if model.removeRow(index.row(), index.parent()):
     #         self.update_actions()
-
-    ##############################################
-
-    # @Slot()
-    # def update_actions(self) -> None:
-    #     selection_model = self.view.selectionModel()
-    #     has_selection: bool = not selection_model.selection().isEmpty()
-    #     self.remove_row_action.setEnabled(has_selection)
-    #     self.remove_column_action.setEnabled(has_selection)
-
-    #     current_index = selection_model.currentIndex()
-    #     has_current: bool = current_index.isValid()
-    #     self.insert_row_action.setEnabled(has_current)
-    #     self.insert_column_action.setEnabled(has_current)
-
-    #     if has_current:
-    #         self.view.closePersistentEditor(current_index)
-    #         msg = f"Position: ({current_index.row()},{current_index.column()})"
-    #         if not current_index.parent().isValid():
-    #             msg += " in top level"
-    #         self.statusBar().showMessage(msg)
 
 ####################################################################################################
 

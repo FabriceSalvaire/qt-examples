@@ -1,3 +1,3 @@
-# QFileSystemModel and TreeView
+# Tree Model
 
-This example shows how to render a **QFileSystemModel** and use a **TreeView**.
+This example shows how to use a **TreeView**.

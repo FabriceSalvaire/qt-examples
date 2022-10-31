@@ -38,7 +38,9 @@ Item {
                 onTapped: {
                     treeView.toggleExpanded(row)
                     console.log(
-                        "Clicked on (row, column):", row, column
+                        "Clicked on (row, column):", row, column,
+                        "Flags:", "isTreeNode", isTreeNode, "expanded", expanded, "hasChildren", hasChildren, "depth", depth,
+                        display
                     )
                 }
             }
