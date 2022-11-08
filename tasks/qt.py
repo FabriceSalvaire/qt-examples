@@ -49,23 +49,23 @@ SOURCE_PATH = Path(__file__).absolute().parents[1]
 
 ####################################################################################################
 
-# @task()
-# def qml(ctx, path):
-#     path = Path(path).absolute()
-#     if not (path.exists() and path.is_dir()):
-#         print(f"Directory {path} doesn't exist")
-#     qml = Path(ctx.Qt.bin_path).joinpath('qml')
-#     includes = ' '.join([f'-I {_}' for _ in (QML_PATH,)])
-#     command = f'{qml} {includes} {path}'
-#     env = {
-#         'QT_LOGGING_RULES': ';'.join((
-#             '*.debug=true',
-#             'qt.*.debug=false',
-#             '*.info=true',
-#         )),
-#     }
-#     # with ctx.cd('.'):
-#     ctx.run(command, env=env)
+@task()
+def qml(ctx, qml_path):
+    # qml = Path(ctx.Qt.bin_path).joinpath('qml')
+    qml = 'pyside6-qml'
+    qml_path = Path(qml_path).absolute()
+    # includes = ' '.join([f'-I {_}' for _ in (QML_PATH,)])
+    includes = ''
+    command = f'{qml} {includes} {qml_path}'
+    env = {
+        'QT_LOGGING_RULES': ';'.join((
+            '*.debug=true',
+            'qt.*.debug=false',
+            '*.info=true',
+        )),
+    }
+    # with ctx.cd('.'):
+    ctx.run(command, env=env)
 
 ####################################################################################################
 
@@ -118,3 +118,9 @@ def find_qml(ctx, follow=False):
         for _ in sorted(wrapper):
             title = str(_).replace('/', ' / ')
             print(f'* [{title}]({BASE_URL}{_})')
+
+####################################################################################################
+
+# @task()
+# def cmake(ctx):
+# /opt/Qt/Tools/CMake/bin/cmake -D CMAKE_PREFIX_PATH:PATH=/opt/Qt/6.4.0/gcc_64/ ../multipage
