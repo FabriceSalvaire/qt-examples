@@ -35,6 +35,15 @@ QT_QPA_PLATFORM="wayland;xcb"
 ## Tablet Support
 
 * [QTabletEvent](https://doc.qt.io/qt-6/qtabletevent.html)
+* [QQuickWindow::tabletEvent](https://doc.qt.io/qt-6/qquickwindow.html#tabletEvent)
+  see https://github.com/dragly/hello-remarkable for example
+  subclass `class TabletWindow : public QQuickWindow`
+  register `qmlRegisterType<TabletWindow>("Test", 1, 0, "TabletWindow");`
+  use `TabletWindow` in QML
+* [PointHandler](https://doc.qt.io/qt-6/qml-qtquick-pointhandler.html)
+  [PointHandler point property](https://doc.qt.io/qt-6/qml-qtquick-pointhandler.html#point-prop)
+  [HandlerPoint](https://doc.qt.io/qt-6/qml-qtquick-handlerpoint.html)
+
 * QML ???
 
 ```
