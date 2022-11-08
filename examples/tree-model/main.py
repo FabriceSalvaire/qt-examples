@@ -155,12 +155,15 @@ class TreeModel(QAbstractItemModel):
 
     # https://doc.qt.io/qt-6/qabstractitemmodel.html
 
-    # Fixme: it is unclear how the root/header node is handled
+    # QModelIndex index = model->index(row, column, parent);
+    # QModelIndex indexA = model->index(0, 0, QModelIndex());
+    # QModelIndex indexB = model->index(1, 0, indexA);
 
     ##############################################
 
     def __init__(self, headers: list, data: str, parent: Optional[QObject] = None) -> None:
         super().__init__(parent)
+        # Note: root item is not rendered by Qt
         self._root_data = headers   # Fixme: root_data is unused
         self._root = TreeItem(self._root_data.copy())
         self._setup_model_data(data, self._root)
