@@ -11,7 +11,7 @@ TabletWindow {
     width: 1404
     height: 1872
 
-    canvas: tabletCanvas
+    canvas: tablet_canvas
 
     Rectangle {
         anchors.fill: parent
@@ -19,7 +19,7 @@ TabletWindow {
     }
 
     TabletCanvas {
-        id: tabletCanvas
+        id: tablet_canvas
         anchors.fill: parent
     }
 

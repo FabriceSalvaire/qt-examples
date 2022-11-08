@@ -19,13 +19,28 @@ void TabletWindow::tabletEvent(QTabletEvent *event)
 {
 //    qDebug() << event;
 
-    QPointF rotated = rotate(event->posF(), width(), height());
-    QPointF rotatedGlobal(rotate(event->globalPosF(), width(), height()));
+    // QPointF rotated = rotate(event->position(), width(), height());
+    // QPointF rotatedGlobal(rotate(event->globalPosition(), width(), height()));
+    QPointF rotated(event->position());
+    QPointF rotatedGlobal(event->globalPosition());
     penEvent(rotated, event->pressure());
 
     if (m_canvas) {
         QPointF offset = rotated - m_canvas->position();
-        QTabletEvent *fakeEvent = new QTabletEvent(event->type(), offset, rotatedGlobal, event->device(), event->pointerType(), event->pressure(), event->xTilt(), event->yTilt(), event->tangentialPressure(), event->rotation(), event->z(), event->modifiers(), event->uniqueId());
+        QTabletEvent *fakeEvent = new QTabletEvent(event->type(),
+                                                   event->pointingDevice(),
+                                                   offset,
+                                                   rotatedGlobal,
+                                                   event->pressure(),
+                                                   event->xTilt(),
+                                                   event->yTilt(),
+                                                   event->tangentialPressure(),
+                                                   event->rotation(),
+                                                   event->z(),
+                                                   event->modifiers(),
+                                                   event->button(),
+                                                   event->buttons()
+                                                   );
         m_canvas->tabletEvent(fakeEvent);
     }
 }

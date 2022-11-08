@@ -8,6 +8,8 @@ find_package(Qt6
   REQUIRED
 )
 
+set(CMAKE_AUTOMOC ON)
+
 add_executable(${PROJECT_NAME}
   main.cpp
   tabletcanvas.cpp
