@@ -6,8 +6,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
-    width: 1600
-    height: 800
+    width: 1000
+    height: 600
 
     GridLayout {
         id: grid
@@ -64,7 +64,9 @@ Item {
                 onClicked: (mouse) => {
                     console.log("MouseArea clicked", mouse.x, mouse.y, mouse.button, mouse.modifiers)
                 }
-                // onDoubleClicked
+                onDoubleClicked: (mouse) => {
+                    console.log("MouseArea double clicked", mouse.x, mouse.y, mouse.button, mouse.modifiers)
+                }
 
                 // https://doc.qt.io/qt-6/qml-qtquick-wheelevent.html
                 onWheel: (wheel) => {
@@ -157,10 +159,19 @@ Item {
                 text: "PinchArea"
             }
 
+	    Rectangle {
+		id: pinch_target
+		width: 50
+		height: width
+		color: "red"
+	    }
+
             // https://doc.qt.io/qt-6/qml-qtquick-pincharea.html
             // Wacom:
             //    ???
             PinchArea {
+		enabled: true
+
                 // pinch.active : bool
                 // pinch.dragAxis : enumeration
                 // pinch.maximumRotation : real
@@ -171,16 +182,50 @@ Item {
                 // pinch.minimumScale : real
                 // pinch.minimumX : real
                 // pinch.minimumY : real
-                // pinch.target : Item
+                
+		pinch.target: pinch_target
 
-                // pinchFinished(PinchEvent pinch)
-                // pinchStarted(PinchEvent pinch)
-                // pinchUpdated(PinchEvent pinch)
-                // smartZoom(PinchEvent pinch)
+		onPinchStarted: (pinch) => {
+		    console.log('onPinchStarted', pinch)
+		}
+
+                onPinchFinished: (pinch) => {
+		    console.log('onPinchFinished', pinch)
+		}
+		
+                onPinchUpdated: (pinch) => {
+		    console.log('onPinchUpdated', pinch)
+		}
+
+                onSmartZoom: (pinch) => {
+		    console.log('onSmartZoom', pinch)
+		}
+            }
+        } // PinchArea
+
+        // PinchHandler
+        Rectangle {
+            width: grid.width / 3
+            height: grid.height / 2
+            border.width: 2
+
+            Text {
+                anchors.centerIn: parent
+                text: "PinchHandler"
             }
 
-            // PinchHandler
+	    Rectangle {
+		id: pinch_target2
+		width: 50
+		height: width
+		color: "red"
+	    }
+
             // https://doc.qt.io/qt-6/qml-qtquick-pinchhandler.html
+            PinchHandler {
+		target: pinch_target2
+            }
+
         } // PinchArea
 
         // PointHandler
