@@ -277,7 +277,7 @@ Item {
             }
         } // PointHandler
 
-        // Taphandler
+        // TapHandler
         Rectangle {
             id: button
             width: grid.width / 3
