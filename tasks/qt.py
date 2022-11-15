@@ -462,7 +462,7 @@ def build(
 )
 def run(ctx, source):
     _init_config(ctx, source)
-    build(ctx, source, cmake=ctx.build.path.exists())
+    build(ctx, source, cmake=not ctx.build.path.exists())
 
     print_section_rule()
     print('Run Environment:')
