@@ -168,9 +168,9 @@ Rectangle {
         //     boundsBehavior: Flickable.DragAndOvershootBounds 
         //     contentWidth: 1000000
         //     contentHeight: 1000000
-        // 
+        //
         //     Item {}
-        //     
+        //
         //     onFlickStarted: console.info("onFlickStarted")
         //     onFlickEnded: console.info("onFlickEnded")
         //     onMovementStarted: console.info("onMovementStarted ", horizontalVelocity, verticalVelocity)

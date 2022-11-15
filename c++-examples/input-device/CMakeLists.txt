@@ -1,19 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
 project(app LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-
-# if(NOT DEFINED INSTALL_EXAMPLESDIR)
-#   set(INSTALL_EXAMPLESDIR "examples")
-# endif()
-
-# set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/demos/touch")
-
-# https://doc.qt.io/qt-5/qtquick-debugging.html
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG")
-add_definitions(-DQT_QML_DEBUG)
-add_definitions(-DQT_DECLARATIVE_DEBUG)
-
 find_package(Qt6 REQUIRED COMPONENTS
   Core
   Gui
@@ -21,11 +8,21 @@ find_package(Qt6 REQUIRED COMPONENTS
   Quick
 )
 
-qt_add_executable(${PROJECT_NAME} WIN32 MACOSX_BUNDLE
+set(CMAKE_AUTOMOC ON)
+
+# https://doc.qt.io/qt-5/qtquick-debugging.html
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG")
+add_definitions(-DQT_QML_DEBUG)
+add_definitions(-DQT_DECLARATIVE_DEBUG)
+
+qt_add_executable(${PROJECT_NAME}
+  WIN32
+  MACOSX_BUNDLE
   main.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
   Qt6::Core
   Qt6::Gui
   Qt6::Qml
