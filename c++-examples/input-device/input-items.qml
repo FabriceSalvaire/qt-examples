@@ -182,7 +182,7 @@ Item {
                 // pinch.minimumScale : real
                 // pinch.minimumX : real
                 // pinch.minimumY : real
-                
+
 		pinch.target: pinch_target
 
 		onPinchStarted: (pinch) => {
@@ -192,7 +192,7 @@ Item {
                 onPinchFinished: (pinch) => {
 		    console.log('onPinchFinished', pinch)
 		}
-		
+
                 onPinchUpdated: (pinch) => {
 		    console.log('onPinchUpdated', pinch)
 		}
