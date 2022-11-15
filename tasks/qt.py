@@ -258,7 +258,7 @@ def find_qml(ctx, follow=True):
         for _ in sorted(wrapper):
             title = str(_).replace('/', ' / ')
             print(f'* [{title}]({BASE_URL}{_})')
-        print()
+        print('---')
 
 ####################################################################################################
 
