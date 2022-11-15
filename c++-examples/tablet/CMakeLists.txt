@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(test-tablet)
+project(app)
 
 find_package(Qt6
   COMPONENTS

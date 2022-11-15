@@ -1,42 +1,5 @@
-/****************************************************************************
-**
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
-**
-** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of The Qt Company Ltd nor the names of its
-**     contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "tabletcanvas.h"
 
@@ -88,6 +51,16 @@ void TabletCanvas::initPixmap()
 //! [3]
 void TabletCanvas::tabletEvent(QTabletEvent *event)
 {
+    // https://doc.qt.io/qt-6/qpointingdevice.html
+    // https://doc.qt.io/qt-6/qinputdevice.html
+    auto device = event->pointingDevice();
+    qInfo() << "TabletEvent "
+            << " type:" << event->pointerType()
+            << " name:" << device->name()
+            << " seat:" << device->seatName()
+            << " id:" << device->systemId() // xinput ID
+        ;
+
     switch (event->type()) {
         case QEvent::TabletPress:
             if (!m_deviceDown) {
@@ -97,8 +70,10 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
             }
             break;
         case QEvent::TabletMove:
-            // if (event->deviceType() == QInputDevice::DeviceType::Stylus) // RotationStylus
-            //     updateCursor(event);
+#ifndef Q_OS_IOS
+            if (event->pointingDevice() && event->pointingDevice()->capabilities().testFlag(QPointingDevice::Capability::Rotation))
+              updateCursor(event);
+#endif
             if (m_deviceDown) {
                 updateBrush(event);
                 QPainter painter(&m_pixmap);
@@ -136,7 +111,7 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
 
 void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
 {
-//    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::Antialiasing);
 
     switch (event->deviceType()) {
 //! [6]
@@ -153,33 +128,32 @@ void TabletCanvas::paintPixmap(QPainter &painter, QTabletEvent *event)
                 painter.drawEllipse(event->position(), radius, radius);
             }
             break;
-        // case QInputDevice::DeviceType::Stylus: // RotationStylus
-        //     {
-        //         m_brush.setStyle(Qt::SolidPattern);
-        //         painter.setPen(Qt::NoPen);
-        //         painter.setBrush(m_brush);
-        //         QPolygonF poly;
-        //         qreal halfWidth = m_pen.widthF();
-        //         QPointF brushAdjust(qSin(qDegreesToRadians(lastPoint.rotation)) * halfWidth,
-        //                             qCos(qDegreesToRadians(lastPoint.rotation)) * halfWidth);
-        //         poly << lastPoint.pos + brushAdjust;
-        //         poly << lastPoint.pos - brushAdjust;
-        //         brushAdjust = QPointF(qSin(qDegreesToRadians(event->rotation())) * halfWidth,
-        //                               qCos(qDegreesToRadians(event->rotation())) * halfWidth);
-        //         poly << event->position() - brushAdjust;
-        //         poly << event->position() + brushAdjust;
-        //         painter.drawConvexPolygon(poly);
-        //     }
-        //     break;
+        case QInputDevice::DeviceType::Stylus:
+            if (event->pointingDevice()->capabilities().testFlag(QPointingDevice::Capability::Rotation)) {
+                m_brush.setStyle(Qt::SolidPattern);
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(m_brush);
+                QPolygonF poly;
+                qreal halfWidth = m_pen.widthF();
+                QPointF brushAdjust(qSin(qDegreesToRadians(lastPoint.rotation)) * halfWidth,
+                                    qCos(qDegreesToRadians(lastPoint.rotation)) * halfWidth);
+                poly << lastPoint.pos + brushAdjust;
+                poly << lastPoint.pos - brushAdjust;
+                brushAdjust = QPointF(qSin(qDegreesToRadians(event->rotation())) * halfWidth,
+                                      qCos(qDegreesToRadians(event->rotation())) * halfWidth);
+                poly << event->position() - brushAdjust;
+                poly << event->position() + brushAdjust;
+                painter.drawConvexPolygon(poly);
+            } else {
+                painter.setPen(m_pen);
+                painter.drawLine(lastPoint.pos, event->position());
+            }
+            break;
         default:
             {
                 const QString error(tr("Unknown tablet device - treating as stylus"));
             }
             // FALL-THROUGH
-        case QInputDevice::DeviceType::Stylus:
-            painter.setPen(m_pen);
-            painter.drawLine(lastPoint.pos, event->position());
-            break;
     }
 }
 //! [5]
@@ -205,7 +179,7 @@ void TabletCanvas::updateBrush(const QTabletEvent *event)
                 m_color.setAlpha(255);
             break;
         case TiltValuator:
-            m_color.setAlpha(maximum(abs(vValue - 127), abs(hValue - 127)));
+          m_color.setAlpha(std::max(std::abs(vValue - 127), std::abs(hValue - 127)));
             break;
         default:
             m_color.setAlpha(255);
@@ -232,7 +206,7 @@ void TabletCanvas::updateBrush(const QTabletEvent *event)
             m_pen.setWidthF(event->pressure() * 10 + 1);
             break;
         case TiltValuator:
-            m_pen.setWidthF(maximum(abs(vValue - 127), abs(hValue - 127)) / 12);
+          m_pen.setWidthF(std::max(std::abs(vValue - 127), std::abs(hValue - 127)) / 12);
             break;
         default:
             m_pen.setWidthF(1);
@@ -260,29 +234,30 @@ void TabletCanvas::updateCursor(const QTabletEvent *event)
         } else {
             switch (event->deviceType()) {
             case QInputDevice::DeviceType::Stylus:
-                cursor = QCursor(QPixmap(":/images/cursor-pencil.png"), 0, 0);
+                if (event->pointingDevice()->capabilities().testFlag(QPointingDevice::Capability::Rotation)) {
+                   QImage origImg(QLatin1String(":/images/cursor-felt-marker.png"));
+                   QImage img(32, 32, QImage::Format_ARGB32);
+                   QColor solid = m_color;
+                   solid.setAlpha(255);
+                   img.fill(solid);
+                   QPainter painter(&img);
+                   QTransform transform = painter.transform();
+                   transform.translate(16, 16);
+                   transform.rotate(-event->rotation());
+                   painter.setTransform(transform);
+                   painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+                   painter.drawImage(-24, -24, origImg);
+                   painter.setCompositionMode(QPainter::CompositionMode_HardLight);
+                   painter.drawImage(-24, -24, origImg);
+                   painter.end();
+                   cursor = QCursor(QPixmap::fromImage(img), 16, 16);
+                } else {
+                    cursor = QCursor(QPixmap(":/images/cursor-pencil.png"), 0, 0);
+                }
                 break;
             case QInputDevice::DeviceType::Airbrush:
                 cursor = QCursor(QPixmap(":/images/cursor-airbrush.png"), 3, 4);
                 break;
-            // case QInputDevice::DeviceType::Stylus: { // RotationStylus
-            //     QImage origImg(QLatin1String(":/images/cursor-felt-marker.png"));
-            //     QImage img(32, 32, QImage::Format_ARGB32);
-            //     QColor solid = m_color;
-            //     solid.setAlpha(255);
-            //     img.fill(solid);
-            //     QPainter painter(&img);
-            //     QTransform transform = painter.transform();
-            //     transform.translate(16, 16);
-            //     transform.rotate(-event->rotation());
-            //     painter.setTransform(transform);
-            //     painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-            //     painter.drawImage(-24, -24, origImg);
-            //     painter.setCompositionMode(QPainter::CompositionMode_HardLight);
-            //     painter.drawImage(-24, -24, origImg);
-            //     painter.end();
-            //     cursor = QCursor(QPixmap::fromImage(img), 16, 16);
-            // } break;
             default:
                 break;
             }
