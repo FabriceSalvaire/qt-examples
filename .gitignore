@@ -1,4 +1,14 @@
 *~
 __pycache__
 __TRASH__
+
 nogit
+
+compile_commands.json
+
+du.log
+build-gcc_64/
+
+PySide6-last
+Qt6-last
+
