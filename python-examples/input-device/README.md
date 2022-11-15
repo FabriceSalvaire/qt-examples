@@ -1,10 +1,49 @@
 # Qt and Input Devices
 
-## Test
+* [Item — Event Handling](https://doc.qt.io/qt-6/qml-qtquick-item.html#event-handling)
 
-* https://doc.qt.io/qt-6/qml-qttest-testcase.html
+## Handlers
 
-## Linux
+* [Qt Quick Input Handlers](https://doc.qt.io/qt-6/qtquickhandlers-index.html)
+* [Say hello to Qt Quick Pointer Hand](https://www.qt.io/blog/2017/11/23/say-hello-qt-quick-pointer-handlers)
+
+Qt Quick Input Handlers are a set of QML types used to handle events from keyboard, touch, mouse,
+and stylus devices.
+
+* an handler manipulates a target item
+* each item can have unlimited handlers
+
+* [Keys]()          Provides key handling to Items
+* [KeyNavigation]() Supports key navigation by arrow keys
+
+* [DragHandler]()   for dragging
+* [HoverHandler]()  for mouse and tablet hover
+* [PinchHandler]()  for pinch gestures
+* [PointHandler]()  for reacting to a single touchpoint
+* [TapHandler]()    for taps and clicks
+* [WheelHandler]()  for the mouse wheel
+
+**Base Classes**
+
+```
+PointerHandler
+    PointerDeviceHandler
+        SinglePointHandler
+            HoverHandler
+            PointHandler
+            TapHandler
+            WheelHandler
+        MultiPointHandler
+            DragHandler
+            PinchHandler
+```
+
+* [PointerHandler](https://doc.qt.io/qt-6/qml-qtquick-pointerhandler.html)
+* [PointerDeviceHandler](https://doc.qt.io/qt-6/qml-qtquick-pointerdevicehandler.html)
+* [SinglePointHandler](https://doc.qt.io/qt-6/qml-qtquick-singlepointhandler.html)
+* [MultiPointHandler](https://doc.qt.io/qt-6/qml-qtquick-multipointhandler.html)
+
+## Linux QPA
 
 On **Linux**, the **xcb QPA** (Qt Platform Abstraction) platform plugin is used.
 

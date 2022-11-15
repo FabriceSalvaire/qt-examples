@@ -226,7 +226,7 @@ Item {
 		target: pinch_target2
             }
 
-        } // PinchArea
+        } // PinchHandler
 
         // PointHandler
         Rectangle {
