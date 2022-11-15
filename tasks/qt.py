@@ -244,7 +244,7 @@ def find_qml(ctx, follow=False):
 
 @task()
 def qml(ctx, qml_path):
-    _init_config(ctx)
+    # _init_config(ctx)
 
     # qml = Path(ctx.Qt.bin_path) / 'qml')
     qml = 'pyside6-qml'
