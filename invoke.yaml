@@ -1,0 +1,20 @@
+# https://docs.pyinvoke.org/en/0.23.0/concepts/configuration.html
+build:
+  # path:
+
+  # generator: make
+  generator: ninja
+
+  build_type: DEBUG
+  # build_type: RELEASE
+
+  cflags: ""
+
+  # openssl: openssl-1.1.1o
+  # openssl: openssl-1.1.1.git
+
+  # qt: .../Qt
+  # arch:
+
+# run_env:
+#   QT_QUICK_CONTROLS_STYLE: material

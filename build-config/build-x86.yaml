@@ -1,0 +1,22 @@
+build:
+  # path: .../build-x86/
+
+  # generator: make
+  generator: ninja
+
+  build_type: DEBUG
+  # build_type: RELEASE
+
+  # cflags: -O3 -march=broadwell -mtune=broadwell -flto
+
+  qt: /opt/Qt/6.4.0
+  arch: gcc_64
+
+run_env:
+  # see also $HOME/.config/QtProject/qtlogging.ini
+  QT_LOGGING_RULES: '*.debug=true;qt.*.debug=false;*.info=true'
+  # QML_IMPORT_TRACE=1
+
+  # ASAN_OPTIONS=new_delete_type_mismatch=0
+
+  # QT_QUICK_CONTROLS_STYLE=material

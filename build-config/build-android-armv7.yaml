@@ -1,0 +1,16 @@
+build:
+  # path: .../build-android_armv7/
+
+  # generator: make
+  generator: ninja
+
+  # build_type: DEBUG
+  build_type: RELEASE
+
+  # qt: /opt/Qt/6.3.1
+  qt: /opt/Qt/6.4.0
+  arch: android_armv7
+  sdk: /opt/Android
+  ndk: /opt/Android/ndk/24.0.8215888
+  android_api: 29
+  jdk: /usr/lib/jvm/java-openjdk

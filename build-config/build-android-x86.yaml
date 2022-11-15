@@ -1,0 +1,20 @@
+build:
+  # path: .../build-android_x86/
+
+  # generator: make
+  generator: ninja
+
+  build_type: DEBUG
+  # build_type: RELEASE
+
+  # https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+  # To force 32-bit arch
+  cflags: -m32
+
+  qt: /opt/Qt/6.4.0
+  # arch: android_x86_64
+  arch: android_x86
+  sdk: /opt/Android
+  ndk: /opt/Android/ndk/24.0.8215888
+  android_api: 29
+  jdk: /usr/lib/jvm/java-openjdk
