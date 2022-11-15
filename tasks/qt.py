@@ -8,7 +8,9 @@
 ####################################################################################################
 
 from pathlib import Path
+from typing import Any
 import glob
+import operator
 import os
 import pathlib
 # import tempfile
@@ -222,23 +224,41 @@ def find_qml_source(ctx, pattern):
 
 ####################################################################################################
 
+def rindex(lst: list, value: Any) -> int:
+    # raise ValueError if not found
+    _ = operator.indexOf(reversed(lst), value)
+    return len(lst) - _ - 1
+
 @task()
-def find_qml(ctx, follow=False):
+def find_qml(ctx, follow=True):
     directories = set()
     for root, _, filenames in os.walk(ROOT_PATH, followlinks=follow):
         root = Path(root)
         for filename in filenames:
             filename = Path(filename)
             if filename.suffix == '.qml':
-                directories.add(root.relative_to(ROOT_PATH))
+                relative = root.relative_to(ROOT_PATH)
+                parts = relative.parts
+                try:
+                    i = rindex(parts, 'qml')
+                    if i > 1:
+                        relative = relative.parents[len(parts) - i - 1]
+                except ValueError:
+                    pass
+                directories.add(relative)
 
-    pyqt = [_ for _ in directories if 'PyQt' in str(_)]
-    pyside = [_ for _ in directories if 'PySide' in str(_)]
-    BASE_URL = 'https://github.com/FabriceSalvaire/qt-python-examples/tree/main/'
-    for wrapper in (pyside, pyqt):
+    def filter_directories(prefix):
+        return [_ for _ in directories if str(_).startswith(prefix)]
+
+    qt = filter_directories('Qt6')
+    pyside = filter_directories('PySide')
+    pyqt = filter_directories('PyQt')
+    BASE_URL = 'https://github.com/FabriceSalvaire/qt-examples/tree/main/'
+    for wrapper in (qt, pyside, pyqt):
         for _ in sorted(wrapper):
             title = str(_).replace('/', ' / ')
             print(f'* [{title}]({BASE_URL}{_})')
+        print()
 
 ####################################################################################################
 
