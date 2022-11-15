@@ -98,7 +98,7 @@ LineShader::updateUniformData(RenderState & state, QSGMaterial * new_material, Q
   //                                      92
   // };
 
-  QDebug();
+  qDebug();
 
   auto material = static_cast<LineMaterial *>(new_material);
 
@@ -174,7 +174,7 @@ LineNode::LineNode(float size, float spread, const QColor & color)
   // QSGGeometry::QSGGeometry(const QSGGeometry::AttributeSet &attributes, int vertexCount, int indexCount = 0, int indexType = UnsignedShortType)
   : m_geometry(attributes(), 0)
 {
-  QDebug();
+  qDebug();
 
   setGeometry(&m_geometry);
   m_geometry.setDrawingMode(QSGGeometry::DrawTriangleStrip);
@@ -200,7 +200,7 @@ LineNode::LineNode(float size, float spread, const QColor & color)
 void
 LineNode::update_geometry(const QRectF &bounds, const QList<qreal> &samples)
 {
-  QDebug();
+  qDebug();
 
   m_geometry.allocate(samples.size() * 2);
 
