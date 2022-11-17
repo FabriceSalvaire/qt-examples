@@ -18,7 +18,7 @@ import shutil
 import sys
 
 # import invoke
-from invoke import task, call
+from invoke import task, call, UnexpectedExit
 
 import yaml
 
@@ -490,7 +490,11 @@ def run(ctx, source):
     print(_)
     print_section_rule()
     command = str(ctx.build.path / 'app')
-    ctx.run(command, env=ctx.run_env)
+    try:
+        print(f'Run {command}')
+        ctx.run(command, env=ctx.run_env, warn=False)
+    except UnexpectedExit:
+        print('Unexpected Exit')
 
 ####################################################################################################
 
