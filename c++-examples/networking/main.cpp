@@ -3,64 +3,29 @@
 
 /**************************************************************************************************/
 
-#include <cstdlib>
 #include <stdlib.h>
 
-#include <QByteArray>
-#include <QCoreApplication>
+// #include <QByteArray>
+// #include <QCoreApplication>
 #include <QApplication>
 #include <QDebug>
-#include <QFuture>
-#include <QNetworkAccessManager>
+// #include <QFuture>
+// #include <QNetworkAccessManager>
 #include <QNetworkInformation>
-#include <QNetworkReply>
-#include <QPromise>
-#include <QThread>
+// #include <QNetworkReply>
+// #include <QPromise>
+// #include <QThread>
 #include <QThreadPool>
-#include <QUrl>
-#include <QtConcurrent>
+ #include <QUrl>
+// #include <QtConcurrent>
 
 /**************************************************************************************************/
 
 #include "DownloadManager.h"
 #include "DownloadManagerQueue.h"
+#include "DownloadManagerFuture.h"
 
 /**************************************************************************************************/
-
-void
-process_image(QByteArray data) {
-  qInfo() << "Received " << data.size();
-}
-
-QByteArray
-download2(const QUrl &url) {
-  QNetworkAccessManager manager;
-  QNetworkRequest request;
-  request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
-  request.setUrl(url);
-  QNetworkReply *reply = manager.get(request);
-  reply->waitForReadyRead(-1); // no timeout ms
-  uint count = 0;
-  while (reply->isRunning() and count < 10) {
-    qInfo() << "Network reply...";
-    QThread::usleep(10000);
-    count++;
-  }
-  qInfo() << "Network reply" << reply->isRunning() << reply->isFinished() << reply->error();
-  reply->deleteLater();
-  return reply->readAll();
-}
-
-void
-download1(const QUrl &url) {
-  QNetworkAccessManager manager;
-  QNetworkReply *reply = manager.get(QNetworkRequest(url));
-  auto future = QtFuture::connect(reply, &QNetworkReply::finished)
-    .then([reply] {
-      return reply->readAll();
-    })
-    .then(QtFuture::Launch::Async, process_image);
-}
 
 /*
 QFuture<QByteArray>
@@ -95,6 +60,7 @@ int
 main(int argc, char *argv[])
 {
   // QCoreApplication app(argc, argv);
+  // if an event loop is required
   QApplication app(argc, argv);
 
   qInfo() << "Start...";
@@ -118,16 +84,21 @@ main(int argc, char *argv[])
   QUrl bad_url("http://foo");
   QList<QUrl> urls = {url1, url2, bad_url};
 
-  DownloadManager manager;
-  DownloadManagerQueue manager_queue;
-  QTimer::singleShot(0, &app, [&] {
-    for (auto url: urls)
-      // manager.get(url);
-      manager_queue.append(url);
-  });
-  QObject::connect(&manager_queue, &DownloadManagerQueue::finished, &app, &QCoreApplication::quit);
+  // DownloadManager manager;
+  // DownloadManagerQueue manager_queue;
+  // QTimer::singleShot(0, &app, [&] {
+  //   for (auto url: urls)
+  //     manager.get(url);
+  //     manager_queue.append(url);
+  // });
+  // QObject::connect(&manager_queue, &DownloadManagerQueue::finished, &app, &QCoreApplication::quit);
 
-  // download1(url);
+  DownloadManagerFuture manager_future;
+  // for (auto url: urls)
+  //   manager_future.get(url);
+  // manager_future.download(urls);
+  manager_future.run_download(urls);
+  manager_future.cancel();
 
   // QTimer::singleShot(0, &app, [&url, &app]{
   //   auto future = QtConcurrent::run(download2, url)

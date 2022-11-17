@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
   main.cpp
   DownloadManager.cpp
   DownloadManagerQueue.cpp
+  DownloadManagerFuture.cpp
 )
 
 add_executable(${PROJECT_NAME}

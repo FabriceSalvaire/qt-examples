@@ -5,8 +5,8 @@
 
 /**************************************************************************************************/
 
-#ifndef DOWNLOADMANAGERQUEUE_H
-#define DOWNLOADMANAGERQUEUE_H
+#ifndef DOWNLOADMANAGERFUTURE_H
+#define DOWNLOADMANAGERFUTURE_H
 
 /**************************************************************************************************/
 
@@ -15,36 +15,30 @@
 
 /**************************************************************************************************/
 
-class DownloadManagerQueue: public QObject
+class DownloadManagerFuture: public QObject
 {
   Q_OBJECT
 
  public:
-  explicit DownloadManagerQueue(QObject *parent = nullptr);
+  explicit DownloadManagerFuture();
 
-  void append(const QUrl &url);
+  void get(const QUrl &url);
+  QFuture<QByteArray> download(const QList<QUrl> &urls);
+  void run_download(const QList<QUrl> &urls);
+  void cancel();
 
- signals:
-  void finished();
-
-  private slots:
-  void start_next_download();
-  void download_progress(qint64 bytesReceived, qint64 bytesTotal);
-  void download_finished();
-  void download_ready_read();
+ // signals:
+ //  void finished();
 
  private:
-  bool is_http_redirect() const;
-  void report_redirect();
+  void update_status(const QString &msg);
+  QList<qsizetype> get_size();
+  void abort_download();
 
  private:
   QNetworkAccessManager m_manager;
-  QQueue<QUrl> m_download_queue;
-  QNetworkReply *m_current_download = nullptr;
-  QElapsedTimer m_download_timer;
-
-  int m_downloaded_count = 0;
-  int m_total_count = 0;
+  QList<QSharedPointer<QNetworkReply>> m_replies;
+  QFuture<QByteArray> m_download_future;
 };
 
 #endif
