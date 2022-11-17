@@ -5,6 +5,7 @@
 ## Handlers
 
 * [Qt Quick Input Handlers](https://doc.qt.io/qt-6/qtquickhandlers-index.html)
+* [Input Events in Qt 6](https://www.qt.io/blog/input-events-in-qt-6)
 * [Say hello to Qt Quick Pointer Hand](https://www.qt.io/blog/2017/11/23/say-hello-qt-quick-pointer-handlers)
 
 Qt Quick Input Handlers are a set of QML types used to handle events from keyboard, touch, mouse,
