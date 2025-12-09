@@ -27,32 +27,6 @@
 
 /**************************************************************************************************/
 
-/*
-QFuture<QByteArray>
-download(const QUrl &url) {
-  // The QPromise class provides a way to store computation results to be
-accessed by QFuture
-  // https://doc.qt.io/qt-6/qpromise.html
-  QPromise<QByteArray> promise;
-  QFuture<QByteArray> future = promise.future();
-
-  promise.start(); // notify that download is started
-
-  // https://doc.qt.io/qt-6/qnetworkaccessmanager.html
-  QNetworkAccessManager manager;
-  // https://doc.qt.io/qt-6/qnetworkreply.html
-  QNetworkReply *reply = manager.get(QNetworkRequest(url));
-  QObject::connect(reply,
-                   &QNetworkReply::finished,
-                   [reply, p = std::move(promise)] {
-                     p.addResult(reply->readAll());
-                     p.finish(); // notify that download is finished
-                     reply->deleteLater();
-                   });
-
-  return future;
-}
-*/
 
 /**************************************************************************************************/
 
@@ -94,11 +68,10 @@ main(int argc, char *argv[])
   // QObject::connect(&manager_queue, &DownloadManagerQueue::finished, &app, &QCoreApplication::quit);
 
   DownloadManagerFuture manager_future;
-  // for (auto url: urls)
-  //   manager_future.get(url);
   // manager_future.download(urls);
   manager_future.run_download(urls);
   manager_future.cancel();
+  // must be killed
 
   // QTimer::singleShot(0, &app, [&url, &app]{
   //   auto future = QtConcurrent::run(download2, url)

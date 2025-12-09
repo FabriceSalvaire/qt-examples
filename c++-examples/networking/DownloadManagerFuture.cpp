@@ -11,31 +11,38 @@
 
 /**************************************************************************************************/
 
+// From Qt Blog
+/*
+QFuture<QByteArray>
+download(const QUrl &url) {
+  QPromise<QByteArray> promise;
+  QFuture<QByteArray> future = promise.future();
+
+  promise.start(); // notify that download is started
+
+  QNetworkAccessManager manager;
+  QNetworkReply *reply = manager.get(QNetworkRequest(url));
+  QObject::connect(reply,
+                   &QNetworkReply::finished,
+                   // Don't compile ???
+                   [reply, p = std::move(promise)] {
+                     p.addResult(reply->readAll());
+                     p.finish(); // notify that download is finished
+                     reply->deleteLater();
+                   });
+
+  return future;
+}
+*/
+
+/**************************************************************************************************/
+
 DownloadManagerFuture::DownloadManagerFuture()
 {}
 
 void
 process(QByteArray data) {
   qInfo() << "Process" << data.size();
-}
-
-void
-DownloadManagerFuture::get(const QUrl &url)
-{
-  QNetworkRequest request(url);
-  request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
-  QNetworkReply *reply = m_manager.get(request);
-  // QFuture<T>
-  auto future = QtFuture::connect(reply, &QNetworkReply::finished)
-    .then([reply] {
-      // if (reply->error() == QNetworkReply::NoError)
-      return reply->readAll();
-      // else
-    })
-    .then(QtFuture::Launch::Async, process)
-    .onFailed([](QNetworkReply::NetworkError) {
-      // handle network errors
-    });
 }
 
 QFuture<QByteArray>
@@ -53,6 +60,9 @@ DownloadManagerFuture::download(const QList<QUrl> &urls)
   // The QSharedPointer is an automatic, shared pointer in C++.
   // It behaves exactly like a normal pointer for normal purposes, including respect for constness.
   // QSharedPointer will delete the pointer it is holding when it goes out of scope, provided no other QSharedPointer objects are referencing it.
+
+  // The QPromise class provides a way to store computation results to be accessed by QFuture
+  //   https://doc.qt.io/qt-6/qpromise.html
   QSharedPointer<QPromise<QByteArray>> promise(new QPromise<QByteArray>());
   auto future = promise->future();
   // notifies QFuture that the computation is started
@@ -62,8 +72,18 @@ DownloadManagerFuture::download(const QList<QUrl> &urls)
     qInfo() << "Get..." << url;
     QNetworkRequest request(url);
     request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
+    // ??? How requests are handled ???
+    //   QNetworkAccessManager queues the requests it receives.
+    //   The number of requests executed in parallel is dependent on the protocol.
+    //   Currently, for the HTTP protocol on desktop platforms, 6 requests are executed in parallel for one host/port combination.
+    //   ??? in a thread ???
+    // https://doc.qt.io/qt-6/qnetworkaccessmanager.html
+    // https://doc.qt.io/qt-6/qnetworkreply.html
     QSharedPointer<QNetworkReply> reply(m_manager.get(request));
     m_replies.push_back(reply);
+    // Cleanup
+    //   m_replies.clear();
+    //   vs reply->deleteLater();
 
     // Instead of connecting to QNetworkReply's signals using the QObject::connect() method, we use QtFuture::connect().
     // It works similar to QObject::connect(), but returns a QFuture object, that becomes available as soon as the

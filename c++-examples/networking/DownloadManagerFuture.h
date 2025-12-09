@@ -22,13 +22,9 @@ class DownloadManagerFuture: public QObject
  public:
   explicit DownloadManagerFuture();
 
-  void get(const QUrl &url);
   QFuture<QByteArray> download(const QList<QUrl> &urls);
   void run_download(const QList<QUrl> &urls);
   void cancel();
-
- // signals:
- //  void finished();
 
  private:
   void update_status(const QString &msg);
