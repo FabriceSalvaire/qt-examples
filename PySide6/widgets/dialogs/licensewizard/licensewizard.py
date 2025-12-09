@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 from enum import IntEnum
@@ -31,7 +32,8 @@ class IntroPage(QWizardPage):
 
         path = Path(__file__).resolve().parent
 
-        self.setPixmap(QWizard.WatermarkPixmap, QPixmap(path / "images" / "watermark.png"))
+        self.setPixmap(QWizard.WizardPixmap.WatermarkPixmap,
+                       QPixmap(path / "images" / "watermark.png"))
         self.top_label = QLabel(
             "This wizard will help you register your copy of "
             "<i>Super Product One</i>&trade; or start "
@@ -165,7 +167,8 @@ class ConclusionPage(QWizardPage):
         self.setTitle("Complete Your Registration")
 
         path = Path(__file__).resolve().parent
-        self.setPixmap(QWizard.WatermarkPixmap, QPixmap(path / "images" / "watermark.png"))
+        self.setPixmap(QWizard.WizardPixmap.WatermarkPixmap,
+                       QPixmap(path / "images" / "watermark.png"))
 
         self.bottom_label = QLabel()
         self.bottom_label.setWordWrap(True)
@@ -206,14 +209,14 @@ class ConclusionPage(QWizardPage):
     def setVisible(self, visible: bool):
         super().setVisible(visible)
         if visible:
-            self.wizard().setButtonText(QWizard.CustomButton1, "&Print")
-            self.wizard().setOption(QWizard.HaveCustomButton1, True)
+            self.wizard().setButtonText(QWizard.WizardButton.CustomButton1, "&Print")
+            self.wizard().setOption(QWizard.WizardOption.HaveCustomButton1, True)
 
             if not self.custom_button_clicked_signal_connected:
                 self.custom_button_clicked_signal_connected = True
                 self.wizard().customButtonClicked.connect(self.print_button_clicked)
         else:
-            self.wizard().setOption(QWizard.HaveCustomButton1, False)
+            self.wizard().setOption(QWizard.WizardOption.HaveCustomButton1, False)
 
             if self.custom_button_clicked_signal_connected:
                 self.custom_button_clicked_signal_connected = False
@@ -250,12 +253,12 @@ class LicenseWizard(QWizard):
         self.setStartId(Pages.Page_Intro)
 
         if sys.platform == 'darwin':
-            self.setWizardStyle(QWizard.ModernStyle)
+            self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
 
-        self.setOption(QWizard.HaveHelpButton, True)
+        self.setOption(QWizard.WizardOption.HaveHelpButton, True)
 
         path = Path(__file__).resolve().parent
-        self.setPixmap(QWizard.LogoPixmap, QPixmap(path / "images" / "logo.png"))
+        self.setPixmap(QWizard.WizardPixmap.LogoPixmap, QPixmap(path / "images" / "logo.png"))
 
         self.helpRequested.connect(self.show_help)
         self.setWindowTitle("License Wizard")

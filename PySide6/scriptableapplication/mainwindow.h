@@ -6,7 +6,8 @@
 
 #include <QtWidgets/QMainWindow>
 
-class QPlainTextEdit;
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QPlainTextEdit)
 
 class MainWindow : public QMainWindow
 {
@@ -16,14 +17,18 @@ public:
 
     void testFunction1();
 
+    static constexpr auto TEST = QLatin1StringView("test");
+
 private Q_SLOTS:
+    void slotCursorChanged();
     void slotRunScript();
     void slotPrintDiagnostics();
 
 private:
-    void runScript(const QStringList &);
+    void runScript(const QString &);
 
     QPlainTextEdit *m_scriptEdit;
+    QLabel *m_lineNumberLabel;
 };
 
 #endif // MAINWINDOW_H

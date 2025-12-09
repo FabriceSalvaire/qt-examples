@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import re
 from PySide6.QtCore import QMimeData, Qt, Slot
@@ -40,7 +41,7 @@ class DropSiteWindow(QWidget):
 
         self._formats_table = QTableWidget()
         self._formats_table.setColumnCount(2)
-        self._formats_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self._formats_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self._formats_table.setHorizontalHeaderLabels(["Format", "Content"])
         self._formats_table.horizontalHeader().setStretchLastSection(True)
 
@@ -49,11 +50,11 @@ class DropSiteWindow(QWidget):
         quit_button = QPushButton("Quit")
 
         button_box = QDialogButtonBox()
-        button_box.addButton(clear_button, QDialogButtonBox.ActionRole)
-        button_box.addButton(self._copy_button, QDialogButtonBox.ActionRole)
+        button_box.addButton(clear_button, QDialogButtonBox.ButtonRole.ActionRole)
+        button_box.addButton(self._copy_button, QDialogButtonBox.ButtonRole.ActionRole)
         self._copy_button.setVisible(False)
 
-        button_box.addButton(quit_button, QDialogButtonBox.RejectRole)
+        button_box.addButton(quit_button, QDialogButtonBox.ButtonRole.RejectRole)
 
         quit_button.clicked.connect(self.close)
         clear_button.clicked.connect(drop_area.clear)
@@ -77,8 +78,8 @@ class DropSiteWindow(QWidget):
 
         for format in mime_data.formats():
             format_item = QTableWidgetItem(format)
-            format_item.setFlags(Qt.ItemIsEnabled)
-            format_item.setTextAlignment(Qt.AlignTop | Qt.AlignLeft)
+            format_item.setFlags(Qt.ItemFlag.ItemIsEnabled)
+            format_item.setTextAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
             if format == "text/plain":
                 text = simplify_whitespace(mime_data.text())

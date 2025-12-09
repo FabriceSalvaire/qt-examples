@@ -1,6 +1,7 @@
 # Copyright (C) 2010 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
@@ -16,7 +17,7 @@ from PySide6.QtWidgets import (QApplication, QGraphicsLinearLayout,
 
 from PySide6.QtStateMachine import QState, QStateMachine
 
-import states_rc
+import states_rc  # noqa: F401
 
 
 class Pixmap(QGraphicsObject):
@@ -64,7 +65,7 @@ if __name__ == '__main__':
 
     # Parent widget.
     widget = QGraphicsWidget()
-    layout = QGraphicsLinearLayout(Qt.Vertical, widget)
+    layout = QGraphicsLinearLayout(Qt.Orientation.Vertical, widget)
     layout.addItem(edit_proxy)
     layout.addItem(button_proxy)
     widget.setLayout(layout)

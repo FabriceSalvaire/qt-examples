@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 import sys
@@ -11,7 +12,7 @@ from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import (QApplication, QFileDialog, QMainWindow,
                                QMessageBox, QTextEdit)
 
-import application_rc
+import application_rc  # noqa: F401
 
 
 class MainWindow(QMainWindow):
@@ -73,61 +74,65 @@ class MainWindow(QMainWindow):
     @Slot()
     def about(self):
         QMessageBox.about(self, "About Application",
-                "The <b>Application</b> example demonstrates how to write "
-                "modern GUI applications using Qt, with a menu bar, "
-                "toolbars, and a status bar.")
+                          "The <b>Application</b> example demonstrates how to write "
+                          "modern GUI applications using Qt, with a menu bar, "
+                          "toolbars, and a status bar.")
 
     @Slot()
     def document_was_modified(self):
         self.setWindowModified(self._text_edit.document().isModified())
 
     def create_actions(self):
-        icon = QIcon.fromTheme("document-new", QIcon(':/images/new.png'))
-        self._new_act = QAction(icon, "&New", self, shortcut=QKeySequence.New,
-                statusTip="Create a new file", triggered=self.new_file)
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.DocumentNew, QIcon(':/images/new.png'))
+        self._new_act = QAction(icon, "&New", self, shortcut=QKeySequence.StandardKey.New,
+                                statusTip="Create a new file", triggered=self.new_file)
 
-        icon = QIcon.fromTheme("document-open", QIcon(':/images/open.png'))
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.DocumentOpen, QIcon(':/images/open.png'))
         self._open_act = QAction(icon, "&Open...", self,
-                shortcut=QKeySequence.Open, statusTip="Open an existing file",
-                triggered=self.open)
+                                 shortcut=QKeySequence.StandardKey.Open,
+                                 statusTip="Open an existing file",
+                                 triggered=self.open)
 
-        icon = QIcon.fromTheme("document-save", QIcon(':/images/save.png'))
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.DocumentSave, QIcon(':/images/save.png'))
         self._save_act = QAction(icon, "&Save", self,
-                shortcut=QKeySequence.Save,
-                statusTip="Save the document to disk", triggered=self.save)
+                                 shortcut=QKeySequence.StandardKey.Save,
+                                 statusTip="Save the document to disk", triggered=self.save)
 
         self._save_as_act = QAction("Save &As...", self,
-                shortcut=QKeySequence.SaveAs,
-                statusTip="Save the document under a new name",
-                triggered=self.save_as)
+                                    shortcut=QKeySequence.StandardKey.SaveAs,
+                                    statusTip="Save the document under a new name",
+                                    triggered=self.save_as)
 
-        self._exit_act = QAction("E&xit", self, shortcut="Ctrl+Q",
-                statusTip="Exit the application", triggered=self.close)
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.ApplicationExit)
+        self._exit_act = QAction(icon, "E&xit", self, shortcut="Ctrl+Q",
+                                 statusTip="Exit the application", triggered=self.close)
 
-        icon = QIcon.fromTheme("edit-cut", QIcon(':/images/cut.png'))
-        self._cut_act = QAction(icon, "Cu&t", self, shortcut=QKeySequence.Cut,
-                statusTip="Cut the current selection's contents to the clipboard",
-                triggered=self._text_edit.cut)
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.EditCut, QIcon(':/images/cut.png'))
+        self._cut_act = QAction(icon, "Cu&t", self, shortcut=QKeySequence.StandardKey.Cut,
+                                statusTip="Cut the current selection's contents to the clipboard",
+                                triggered=self._text_edit.cut)
 
-        icon = QIcon.fromTheme("edit-copy", QIcon(':/images/copy.png'))
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.EditCopy, QIcon(':/images/copy.png'))
         self._copy_act = QAction(icon, "&Copy",
-                self, shortcut=QKeySequence.Copy,
-                statusTip="Copy the current selection's contents to the clipboard",
-                triggered=self._text_edit.copy)
+                                 self, shortcut=QKeySequence.StandardKey.Copy,
+                                 statusTip="Copy the current selection's contents to the clipboard",
+                                 triggered=self._text_edit.copy)
 
-        icon = QIcon.fromTheme("edit-paste", QIcon(':/images/paste.png'))
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.EditPaste, QIcon(':/images/paste.png'))
         self._paste_act = QAction(icon, "&Paste",
-                self, shortcut=QKeySequence.Paste,
-                statusTip="Paste the clipboard's contents into the current selection",
-                triggered=self._text_edit.paste)
+                                  self, shortcut=QKeySequence.StandardKey.Paste,
+                                  statusTip="Paste the clipboard's contents into the current "
+                                  "selection",
+                                  triggered=self._text_edit.paste)
 
-        self._about_act = QAction("&About", self,
-                statusTip="Show the application's About box",
-                triggered=self.about)
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout)
+        self._about_act = QAction(icon, "&About", self,
+                                  statusTip="Show the application's About box",
+                                  triggered=self.about)
 
         self._about_qt_act = QAction("About &Qt", self,
-                statusTip="Show the Qt library's About box",
-                triggered=qApp.aboutQt)
+                                     statusTip="Show the Qt library's About box",
+                                     triggered=qApp.aboutQt)  # noqa: F821
 
         self._cut_act.setEnabled(False)
         self._copy_act.setEnabled(False)
@@ -181,26 +186,26 @@ class MainWindow(QMainWindow):
     def maybe_save(self):
         if self._text_edit.document().isModified():
             ret = QMessageBox.warning(self, "Application",
-                    "The document has been modified.\nDo you want to save "
-                    "your changes?",
-                    QMessageBox.Save | QMessageBox.Discard |
-                    QMessageBox.Cancel)
-            if ret == QMessageBox.Save:
+                                      "The document has been modified.\nDo you want to save "
+                                      "your changes?",
+                                      QMessageBox.StandardButton.Save
+                                      | QMessageBox.StandardButton.Discard
+                                      | QMessageBox.StandardButton.Cancel)
+            if ret == QMessageBox.StandardButton.Save:
                 return self.save()
-            elif ret == QMessageBox.Cancel:
+            elif ret == QMessageBox.StandardButton.Cancel:
                 return False
         return True
 
     def load_file(self, fileName):
         file = QFile(fileName)
-        if not file.open(QFile.ReadOnly | QFile.Text):
+        if not file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
             reason = file.errorString()
-            QMessageBox.warning(self, "Application",
-                    f"Cannot read file {fileName}:\n{reason}.")
+            QMessageBox.warning(self, "Application", f"Cannot read file {fileName}:\n{reason}.")
             return
 
         inf = QTextStream(file)
-        with QApplication.setOverrideCursor(Qt.WaitCursor):
+        with QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor):
             self._text_edit.setPlainText(inf.readAll())
 
         self.set_current_file(fileName)
@@ -208,9 +213,9 @@ class MainWindow(QMainWindow):
 
     def save_file(self, fileName):
         error = None
-        with QApplication.setOverrideCursor(Qt.WaitCursor):
+        with QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor):
             file = QSaveFile(fileName)
-            if file.open(QFile.WriteOnly | QFile.Text):
+            if file.open(QFile.OpenModeFlag.WriteOnly | QFile.OpenModeFlag.Text):
                 outf = QTextStream(file)
                 outf << self._text_edit.toPlainText()
                 if not file.commit():

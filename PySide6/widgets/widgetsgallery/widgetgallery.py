@@ -1,15 +1,24 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
-from PySide6.QtWidgets import *
+from PySide6.QtCore import (QDateTime, QDir, QLibraryInfo, QSysInfo, Qt,
+                            QTimer, Slot, qVersion)
 from PySide6.QtGui import (QCursor, QDesktopServices, QGuiApplication, QIcon,
                            QKeySequence, QShortcut, QStandardItem,
                            QStandardItemModel)
-from PySide6.QtCore import (QDateTime, QDir, QLibraryInfo,
-                            QSysInfo, QTimer, Qt, qVersion, Slot)
-
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox,
+                               QCommandLinkButton, QDateTimeEdit, QDial,
+                               QDialog, QDialogButtonBox, QFileSystemModel,
+                               QGridLayout, QGroupBox, QHBoxLayout, QLabel,
+                               QLineEdit, QListView, QMenu, QPlainTextEdit,
+                               QProgressBar, QPushButton, QRadioButton,
+                               QScrollBar, QSizePolicy, QSlider, QSpinBox,
+                               QStyleFactory, QTableWidget, QTabWidget,
+                               QTextBrowser, QTextEdit, QToolBox, QToolButton,
+                               QTreeView, QVBoxLayout, QWidget)
 
 POEM = """Twinkle, twinkle, little star,
 How I wonder what you are.
@@ -25,7 +34,7 @@ COMPUTER_ICON = ":/qt-project.org/styles/commonstyle/images/computer-32.png"
 SYSTEMINFO = """<html><head/><body>
 <h3>Python</h3><p>{}</p>
 <h3>Qt Build</h3><p>{}</p>
-<h3>Operating System</h3><p>{}</p>
+<h3>Operating System</h3><p>"{}" / {}</p>
 <h3>Screens</h3>
 {}
 </body></html>"""
@@ -145,7 +154,7 @@ class WidgetGallery(QDialog):
         disable_widgets_checkbox.toggled.connect(simple_input_widgets_groupbox.setDisabled)
 
         help_shortcut = QShortcut(self)
-        help_shortcut.setKey(QKeySequence.HelpContents)
+        help_shortcut.setKey(QKeySequence.StandardKey.HelpContents)
         help_shortcut.activated.connect(self.help_on_current_widget)
 
         top_layout = QHBoxLayout()
@@ -156,8 +165,8 @@ class WidgetGallery(QDialog):
         top_layout.addStretch(1)
         top_layout.addWidget(disable_widgets_checkbox)
 
-        dialog_buttonbox = QDialogButtonBox(QDialogButtonBox.Help |
-                                            QDialogButtonBox.Close)
+        dialog_buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Help
+                                            | QDialogButtonBox.StandardButton.Close)
         init_widget(dialog_buttonbox, "dialogButtonBox")
         dialog_buttonbox.helpRequested.connect(launch_module_help)
         dialog_buttonbox.rejected.connect(self.reject)
@@ -215,7 +224,7 @@ class WidgetGallery(QDialog):
         init_widget(menu_toolbutton, "menuButton")
         menu_toolbutton.setText("Menu Button")
         tool_menu = QMenu(menu_toolbutton)
-        menu_toolbutton.setPopupMode(QToolButton.InstantPopup)
+        menu_toolbutton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         tool_menu.addAction("Option")
         tool_menu.addSeparator()
         action = tool_menu.addAction("Checkable Option")
@@ -248,7 +257,7 @@ class WidgetGallery(QDialog):
         checkbox = QCheckBox("Tri-state check box")
         init_widget(checkbox, "checkBox")
         checkbox.setTristate(True)
-        checkbox.setCheckState(Qt.PartiallyChecked)
+        checkbox.setCheckState(Qt.CheckState.PartiallyChecked)
 
         checkable_layout = QVBoxLayout()
         checkable_layout.addWidget(radiobutton_1)
@@ -291,7 +300,7 @@ class WidgetGallery(QDialog):
     def create_itemview_tabwidget(self):
         result = QTabWidget()
         init_widget(result, "bottomLeftTabWidget")
-        result.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Ignored)
+        result.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Ignored)
 
         tree_view = QTreeView()
         init_widget(tree_view, "treeView")
@@ -316,7 +325,7 @@ class WidgetGallery(QDialog):
         icon_mode_listview = QListView()
         init_widget(icon_mode_listview, "iconModeListView")
 
-        icon_mode_listview.setViewMode(QListView.IconMode)
+        icon_mode_listview.setViewMode(QListView.ViewMode.IconMode)
         icon_mode_listview.setModel(list_model)
 
         result.addTab(embed_into_hbox_layout(tree_view), "Tree View")
@@ -335,7 +344,7 @@ class WidgetGallery(QDialog):
         lineedit = QLineEdit("s3cRe7")
         init_widget(lineedit, "lineEdit")
         lineedit.setClearButtonEnabled(True)
-        lineedit.setEchoMode(QLineEdit.Password)
+        lineedit.setEchoMode(QLineEdit.EchoMode.Password)
 
         spin_box = QSpinBox()
         init_widget(spin_box, "spinBox")
@@ -347,12 +356,12 @@ class WidgetGallery(QDialog):
 
         slider = QSlider()
         init_widget(slider, "slider")
-        slider.setOrientation(Qt.Horizontal)
+        slider.setOrientation(Qt.Orientation.Horizontal)
         slider.setValue(40)
 
         scrollbar = QScrollBar()
         init_widget(scrollbar, "scrollBar")
-        scrollbar.setOrientation(Qt.Horizontal)
+        scrollbar.setOrientation(Qt.Orientation.Horizontal)
         scrollbar.setValue(60)
 
         dial = QDial()
@@ -387,6 +396,7 @@ class WidgetGallery(QDialog):
         system_info = SYSTEMINFO.format(sys.version,
                                         QLibraryInfo.build(),
                                         QSysInfo.prettyProductName(),
+                                        QGuiApplication.platformName(),
                                         screen_info(self))
         self._systeminfo_textbrowser.setHtml(system_info)
 

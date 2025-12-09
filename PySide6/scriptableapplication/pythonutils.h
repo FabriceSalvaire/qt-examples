@@ -6,7 +6,7 @@
 
 #include <QtCore/QStringList>
 
-class QObject;
+QT_FORWARD_DECLARE_CLASS(QObject)
 
 namespace PythonUtils {
 
@@ -27,7 +27,7 @@ State init();
 bool bindAppObject(const QString &moduleName, const QString &name,
                    int index, QObject *o);
 
-bool runScript(const QStringList &script);
+bool runScript(const QString &script);
 
 } // namespace PythonUtils
 

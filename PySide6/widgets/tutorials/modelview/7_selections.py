@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
@@ -8,6 +9,7 @@ from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QApplication, QMainWindow, QTreeView
 
 """PySide6 port of the widgets/tutorials/modelview/7_selections example from Qt v6.x"""
+
 
 #! [1]
 class MainWindow(QMainWindow):
@@ -52,7 +54,7 @@ class MainWindow(QMainWindow):
     def selection_changed_slot(self, new_selection, old_selection):
         # get the text of the selected item
         index = self._tree_view.selectionModel().currentIndex()
-        selected_text = index.data(Qt.DisplayRole)
+        selected_text = index.data(Qt.ItemDataRole.DisplayRole)
         # find out the hierarchy level of the selected item
         hierarchy_level = 1
         seek_root = index

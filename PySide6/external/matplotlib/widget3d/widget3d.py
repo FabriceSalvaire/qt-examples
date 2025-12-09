@@ -1,10 +1,11 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
 import numpy as np
-from matplotlib.backends.backend_qt5agg import FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import axes3d
 from PySide6.QtCore import Qt, Slot
@@ -32,12 +33,13 @@ class ApplicationWindow(QMainWindow):
         # Main menu bar
         self.menu = self.menuBar()
         self.menu_file = self.menu.addMenu("File")
-        exit = QAction("Exit", self, triggered=qApp.quit)
+        exit = QAction("Exit", self, triggered=qApp.quit)  # noqa: F821
         self.menu_file.addAction(exit)
 
         self.menu_about = self.menu.addMenu("&About")
-        about = QAction("About Qt", self, shortcut=QKeySequence(QKeySequence.HelpContents),
-                        triggered=qApp.aboutQt)
+        about = QAction("About Qt", self,
+                        shortcut=QKeySequence(QKeySequence.StandardKey.HelpContents),
+                        triggered=qApp.aboutQt)  # noqa: F821
         self.menu_about.addAction(about)
 
         # Figure (Left)
@@ -47,8 +49,8 @@ class ApplicationWindow(QMainWindow):
         # Sliders (Left)
         min = 0
         max = 360
-        self.slider_azim = QSlider(minimum=min, maximum=max, orientation=Qt.Horizontal)
-        self.slider_elev = QSlider(minimum=min, maximum=max, orientation=Qt.Horizontal)
+        self.slider_azim = QSlider(minimum=min, maximum=max, orientation=Qt.Orientation.Horizontal)
+        self.slider_elev = QSlider(minimum=min, maximum=max, orientation=Qt.Orientation.Horizontal)
 
         self.slider_azim_layout = QHBoxLayout()
         self.slider_azim_layout.addWidget(QLabel(f"{min}"))
@@ -63,7 +65,7 @@ class ApplicationWindow(QMainWindow):
         # Table (Right)
         self.table = QTableWidget()
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(QHeaderView.Stretch)
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         # ComboBox (Right)
         self.combo = QComboBox()

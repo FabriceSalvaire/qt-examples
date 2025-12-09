@@ -1,8 +1,9 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import Qt, QPoint, QRect, QSize, Property, Slot
-from PySide6.QtGui import QMouseEvent, QPainter, QPen
+from PySide6.QtGui import QPainter, QPen
 from PySide6.QtWidgets import QWidget
 
 
@@ -63,9 +64,9 @@ class TicTacToe(QWidget):
 
     def paintEvent(self, event):
         with QPainter(self) as painter:
-            painter.setRenderHint(QPainter.Antialiasing)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-            painter.setPen(QPen(Qt.darkGreen, 1))
+            painter.setPen(QPen(Qt.GlobalColor.darkGreen, 1))
             painter.drawLine(self._cell_width(), 0,
                              self._cell_width(), self.height())
             painter.drawLine(2 * self._cell_width(), 0,
@@ -75,7 +76,7 @@ class TicTacToe(QWidget):
             painter.drawLine(0, 2 * self._cell_height(),
                              self.width(), 2 * self._cell_height())
 
-            painter.setPen(QPen(Qt.darkBlue, 2))
+            painter.setPen(QPen(Qt.GlobalColor.darkBlue, 2))
 
             for position in range(9):
                 cell = self._cell_rect(position)
@@ -85,31 +86,31 @@ class TicTacToe(QWidget):
                 elif self._state[position] == NOUGHT:
                     painter.drawEllipse(cell)
 
-            painter.setPen(QPen(Qt.yellow, 3))
+            painter.setPen(QPen(Qt.GlobalColor.yellow, 3))
 
             for position in range(0, 8, 3):
                 if (self._state[position] != EMPTY
-                    and self._state[position + 1] == self._state[position]
-                    and self._state[position + 2] == self._state[position]):
+                        and self._state[position + 1] == self._state[position]
+                        and self._state[position + 2] == self._state[position]):
                     y = self._cell_rect(position).center().y()
                     painter.drawLine(0, y, self.width(), y)
                     self._turn_number = 9
 
             for position in range(3):
                 if (self._state[position] != EMPTY
-                    and self._state[position + 3] == self._state[position]
-                    and self._state[position + 6] == self._state[position]):
+                        and self._state[position + 3] == self._state[position]
+                        and self._state[position + 6] == self._state[position]):
                     x = self._cell_rect(position).center().x()
                     painter.drawLine(x, 0, x, self.height())
                     self._turn_number = 9
 
             if (self._state[0] != EMPTY and self._state[4] == self._state[0]
-                and self._state[8] == self._state[0]):
+                    and self._state[8] == self._state[0]):
                 painter.drawLine(0, 0, self.width(), self.height())
                 self._turn_number = 9
 
             if (self._state[2] != EMPTY and self._state[4] == self._state[2]
-                and self._state[6] == self._state[2]):
+                    and self._state[6] == self._state[2]):
                 painter.drawLine(0, self.height(), self.width(), 0)
                 self._turn_number = 9
 

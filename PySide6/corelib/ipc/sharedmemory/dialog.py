@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import os
 from pathlib import Path
@@ -51,7 +52,7 @@ class Dialog(QDialog):
 
         # load into shared memory
         buffer = QBuffer()
-        buffer.open(QIODeviceBase.WriteOnly)
+        buffer.open(QIODeviceBase.OpenModeFlag.WriteOnly)
         out = QDataStream(buffer)
         out << image
         buffer.close()
@@ -78,7 +79,7 @@ class Dialog(QDialog):
         mv = memoryview(self._shared_memory.constData())
         buffer = QBuffer()
         buffer.setData(mv.tobytes())
-        buffer.open(QBuffer.ReadOnly)
+        buffer.open(QBuffer.OpenModeFlag.ReadOnly)
         _in = QDataStream(buffer)
         image = QImage()
         _in >> image
@@ -90,4 +91,4 @@ class Dialog(QDialog):
 
     def detach(self):
         if not self._shared_memory.detach():
-            self.ui.label.setText(tr("Unable to detach from shared memory."))
+            self.ui.label.setText(self.tr("Unable to detach from shared memory."))  # noqa: F821

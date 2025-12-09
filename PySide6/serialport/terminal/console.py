@@ -1,13 +1,14 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QPlainTextEdit
 
 
-UNHANDLED_KEYS = [Qt.Key_Backspace, Qt.Key_Left, Qt.Key_Right, Qt.Key_Up,
-                  Qt.Key_Down]
+UNHANDLED_KEYS = [Qt.Key.Key_Backspace, Qt.Key.Key_Left, Qt.Key.Key_Right, Qt.Key.Key_Up,
+                  Qt.Key.Key_Down]
 
 
 class Console(QPlainTextEdit):
@@ -19,8 +20,8 @@ class Console(QPlainTextEdit):
         self.m_localEchoEnabled = False
         self.document().setMaximumBlockCount(100)
         p = self.palette()
-        p.setColor(QPalette.Base, Qt.black)
-        p.setColor(QPalette.Text, Qt.green)
+        p.setColor(QPalette.ColorRole.Base, Qt.GlobalColor.black)
+        p.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.green)
         self.setPalette(p)
 
     @Slot(bytearray)

@@ -1,11 +1,14 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/dialogs/standarddialogs example from Qt v5.x"""
 
 import sys
-from PySide6.QtCore import QDir, Qt, Slot
+from textwrap import dedent
+
+from PySide6.QtCore import QDir, QLibraryInfo, QLocale, QTranslator, Qt, Slot
 from PySide6.QtGui import QFont, QPalette
 from PySide6.QtWidgets import (QApplication, QColorDialog, QCheckBox, QDialog,
                                QErrorMessage, QFontDialog, QFileDialog, QFrame,
@@ -18,13 +21,14 @@ from PySide6.QtWidgets import (QApplication, QColorDialog, QCheckBox, QDialog,
 class DialogOptionsWidget(QGroupBox):
     """Widget displaying a number of check boxes representing the dialog
        options."""
-    def __init__(self, parent=None):
+    def __init__(self, zero_value, parent=None):
         super().__init__(parent)
+        self._zero_value = zero_value
         self._layout = QVBoxLayout(self)
         self._mapping = {}
 
     def value(self):
-        result = 0
+        result = self._zero_value
         for checkbox, value in self._mapping.items():
             if checkbox.isChecked():
                 result |= value
@@ -37,10 +41,6 @@ class DialogOptionsWidget(QGroupBox):
 
 
 class Dialog(QDialog):
-    MESSAGE = ("<p>Message boxes have a caption, a text, and up to three "
-               "buttons, each with standard or custom texts.</p>"
-               "<p>Click a button to close the message box. Pressing the Esc "
-               "button will activate the detected escape button (if any).</p>")
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -49,7 +49,7 @@ class Dialog(QDialog):
 
         self._error_message_dialog = QErrorMessage(self)
 
-        frame_style = QFrame.Sunken | QFrame.Panel
+        frame_style = QFrame.Shadow.Sunken | QFrame.Shape.Panel
 
         self._integer_label = QLabel()
         self._integer_label.setFrameStyle(frame_style)
@@ -74,27 +74,27 @@ class Dialog(QDialog):
         self._color_label = QLabel()
         self._color_label.setFrameStyle(frame_style)
         self._color_button = QPushButton("QColorDialog.get&Color()")
-        self._color_options = DialogOptionsWidget()
+        self._color_options = DialogOptionsWidget(QColorDialog.ColorDialogOption(0))
         self._color_options.add_checkbox("Show alpha channel",
-                                         QColorDialog.ShowAlphaChannel)
+                                         QColorDialog.ColorDialogOption.ShowAlphaChannel)
         self._color_options.add_checkbox("No buttons",
-                                         QColorDialog.NoButtons)
+                                         QColorDialog.ColorDialogOption.NoButtons)
 
         self._font_label = QLabel()
         self._font_label.setFrameStyle(frame_style)
         self._font_button = QPushButton("QFontDialog.get&Font()")
-        self._font_options = DialogOptionsWidget()
+        self._font_options = DialogOptionsWidget(QFontDialog.FontDialogOption(0))
         self._font_options.add_checkbox("Do not use native dialog",
-                                        QFontDialog.DontUseNativeDialog)
+                                        QFontDialog.FontDialogOption.DontUseNativeDialog)
         self._font_options.add_checkbox("Show scalable fonts",
-                                        QFontDialog.ScalableFonts)
+                                        QFontDialog.FontDialogOption.ScalableFonts)
         self._font_options.add_checkbox("Show non-scalable fonts",
-                                        QFontDialog.NonScalableFonts)
+                                        QFontDialog.FontDialogOption.NonScalableFonts)
         self._font_options.add_checkbox("Show monospaced fonts",
-                                        QFontDialog.MonospacedFonts)
+                                        QFontDialog.FontDialogOption.MonospacedFonts)
         self._font_options.add_checkbox("Show proportional fonts",
-                                        QFontDialog.ProportionalFonts)
-        self._font_options.add_checkbox("No buttons", QFontDialog.NoButtons)
+                                        QFontDialog.FontDialogOption.ProportionalFonts)
+        self._font_options.add_checkbox("No buttons", QFontDialog.FontDialogOption.NoButtons)
 
         self._directory_label = QLabel()
         self._directory_label.setFrameStyle(frame_style)
@@ -112,20 +112,20 @@ class Dialog(QDialog):
         self._save_file_name_label.setFrameStyle(frame_style)
         self._save_file_name_button = QPushButton("QFileDialog.get&SaveFileName()")
 
-        self._file_options = DialogOptionsWidget()
+        self._file_options = DialogOptionsWidget(QFileDialog.Option(0))
         self._file_options.add_checkbox("Do not use native dialog",
-                                        QFileDialog.DontUseNativeDialog)
+                                        QFileDialog.Option.DontUseNativeDialog)
         self._file_options.add_checkbox("Show directories only",
-                                        QFileDialog.ShowDirsOnly)
+                                        QFileDialog.Option.ShowDirsOnly)
         self._file_options.add_checkbox("Do not resolve symlinks",
-                                        QFileDialog.DontResolveSymlinks)
+                                        QFileDialog.Option.DontResolveSymlinks)
         self._file_options.add_checkbox("Do not confirm overwrite",
-                                        QFileDialog.DontConfirmOverwrite)
-        self._file_options.add_checkbox("Readonly", QFileDialog.ReadOnly)
+                                        QFileDialog.Option.DontConfirmOverwrite)
+        self._file_options.add_checkbox("Readonly", QFileDialog.Option.ReadOnly)
         self._file_options.add_checkbox("Hide name filter details",
-                                        QFileDialog.HideNameFilterDetails)
+                                        QFileDialog.Option.HideNameFilterDetails)
         self._file_options.add_checkbox("Do not use custom directory icons (Windows)",
-                                        QFileDialog.DontUseCustomDirectoryIcons)
+                                        QFileDialog.Option.DontUseCustomDirectoryIcons)
 
         self._critical_label = QLabel()
         self._critical_label.setFrameStyle(frame_style)
@@ -143,8 +143,6 @@ class Dialog(QDialog):
         self._warning_label.setFrameStyle(frame_style)
         self._warning_button = QPushButton("QMessageBox.&warning()")
 
-        self._error_label = QLabel()
-        self._error_label.setFrameStyle(frame_style)
         self._error_button = QPushButton("QErrorMessage.showM&essage()")
 
         self._integer_button.clicked.connect(self.set_integer)
@@ -181,7 +179,7 @@ class Dialog(QDialog):
         layout.addWidget(self._text_label, 3, 1)
         layout.addWidget(self._multiline_text_label, 4, 1)
         layout.addWidget(self._multiline_text_button, 4, 0)
-        spacer = QSpacerItem(0, 0, QSizePolicy.Ignored, QSizePolicy.MinimumExpanding)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Ignored, QSizePolicy.Policy.MinimumExpanding)
         layout.addItem(spacer, 5, 0)
         toolbox.addItem(page, "Input Dialogs")
 
@@ -189,7 +187,7 @@ class Dialog(QDialog):
         layout = QGridLayout(page)
         layout.addWidget(self._color_button, 0, 0)
         layout.addWidget(self._color_label, 0, 1)
-        spacer = QSpacerItem(0, 0, QSizePolicy.Ignored, QSizePolicy.MinimumExpanding)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Ignored, QSizePolicy.Policy.MinimumExpanding)
         layout.addItem(spacer, 1, 0)
         layout.addWidget(self._color_options, 2, 0, 1, 2)
         toolbox.addItem(page, "Color Dialog")
@@ -198,7 +196,7 @@ class Dialog(QDialog):
         layout = QGridLayout(page)
         layout.addWidget(self._font_button, 0, 0)
         layout.addWidget(self._font_label, 0, 1)
-        spacer = QSpacerItem(0, 0, QSizePolicy.Ignored, QSizePolicy.MinimumExpanding)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Ignored, QSizePolicy.Policy.MinimumExpanding)
         layout.addItem(spacer, 1, 0)
         layout.addWidget(self._font_options, 2, 0, 1, 2)
         toolbox.addItem(page, "Font Dialog")
@@ -213,7 +211,7 @@ class Dialog(QDialog):
         layout.addWidget(self._open_file_names_label, 2, 1)
         layout.addWidget(self._save_file_name_button, 3, 0)
         layout.addWidget(self._save_file_name_label, 3, 1)
-        spacer = QSpacerItem(0, 0, QSizePolicy.Ignored, QSizePolicy.MinimumExpanding)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Ignored, QSizePolicy.Policy.MinimumExpanding)
         layout.addItem(spacer, 4, 0)
         layout.addWidget(self._file_options, 5, 0, 1, 2)
 
@@ -230,8 +228,7 @@ class Dialog(QDialog):
         layout.addWidget(self._warning_button, 3, 0)
         layout.addWidget(self._warning_label, 3, 1)
         layout.addWidget(self._error_button, 4, 0)
-        layout.addWidget(self._error_label, 4, 1)
-        spacer = QSpacerItem(0, 0, QSizePolicy.Ignored, QSizePolicy.MinimumExpanding)
+        spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Ignored, QSizePolicy.Policy.MinimumExpanding)
         layout.addItem(spacer, 5, 0)
         toolbox.addItem(page, "Message Boxes")
 
@@ -240,14 +237,14 @@ class Dialog(QDialog):
     @Slot()
     def set_integer(self):
         i, ok = QInputDialog.getInt(self,
-                "QInputDialog.getInteger()", "Percentage:", 25, 0, 100, 1)
+                                    "QInputDialog.getInteger()", "Percentage:", 25, 0, 100, 1)
         if ok:
             self._integer_label.setText(f"{i}%")
 
     @Slot()
     def set_double(self):
         d, ok = QInputDialog.getDouble(self, "QInputDialog.getDouble()",
-                "Amount:", 37.56, -10000, 10000, 2)
+                                       "Amount:", 37.56, -10000, 10000, 2)
         if ok:
             self._double_label.setText(f"${d:g}")
 
@@ -255,31 +252,29 @@ class Dialog(QDialog):
     def set_item(self):
         items = ("Spring", "Summer", "Fall", "Winter")
 
-        item, ok = QInputDialog.getItem(self, "QInputDialog.getItem()",
-                "Season:", items, 0, False)
+        item, ok = QInputDialog.getItem(self, "QInputDialog.getItem()", "Season:", items, 0, False)
         if ok and item:
             self._item_label.setText(item)
 
     @Slot()
     def set_text(self):
         text, ok = QInputDialog.getText(self, "QInputDialog.getText()",
-                "User name:", QLineEdit.Normal,
-                QDir.home().dirName())
+                                        "User name:", QLineEdit.Normal, QDir.home().dirName())
         if ok and text != '':
             self._text_label.setText(text)
 
     @Slot()
     def set_multiline_text(self):
         text, ok = QInputDialog.getMultiLineText(self, "QInputDialog::getMultiLineText()",
-                "Address:", "John Doe\nFreedom Street")
+                                                 "Address:", "John Doe\nFreedom Street")
         if ok and text != '':
             self._multiline_text_label.setText(text)
 
     @Slot()
     def set_color(self):
         options_value = self._color_options.value()
-        options = QColorDialog.ColorDialogOptions(options_value)
-        color = QColorDialog.getColor(Qt.green, self, "Select Color", options)
+        options = QColorDialog.ColorDialogOption(options_value)
+        color = QColorDialog.getColor(Qt.GlobalColor.green, self, "Select Color", options)
 
         if color.isValid():
             self._color_label.setText(color.name())
@@ -306,9 +301,8 @@ class Dialog(QDialog):
         options_value = self._file_options.value()
         options = QFileDialog.Options(options_value) | QFileDialog.ShowDirsOnly
 
-        directory = QFileDialog.getExistingDirectory(self,
-                "QFileDialog.getExistingDirectory()",
-                self._directory_label.text(), options)
+        directory = QFileDialog.getExistingDirectory(self, "QFileDialog.getExistingDirectory()",
+                                                     self._directory_label.text(), options)
         if directory:
             self._directory_label.setText(directory)
 
@@ -317,10 +311,9 @@ class Dialog(QDialog):
         options_value = self._file_options.value()
         options = QFileDialog.Options(options_value)
 
-        fileName, filtr = QFileDialog.getOpenFileName(self,
-                "QFileDialog.getOpenFileName()",
-                self._open_file_name_label.text(),
-                "All Files (*);;Text Files (*.txt)", "", options)
+        fileName, _ = QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()",
+                                                  self._open_file_name_label.text(),
+                                                  "All Files (*);;Text Files (*.txt)", "", options)
         if fileName:
             self._open_file_name_label.setText(fileName)
 
@@ -329,9 +322,9 @@ class Dialog(QDialog):
         options_value = self._file_options.value()
         options = QFileDialog.Options(options_value)
 
-        files, filtr = QFileDialog.getOpenFileNames(self,
-                "QFileDialog.getOpenFileNames()", self._open_files_path,
-                "All Files (*);;Text Files (*.txt)", "", options)
+        files, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()",
+                                                self._open_files_path,
+                                                "All Files (*);;Text Files (*.txt)", "", options)
         if files:
             self._open_files_path = files[0]
             file_list = ', '.join(files)
@@ -342,71 +335,107 @@ class Dialog(QDialog):
         options_value = self._file_options.value()
         options = QFileDialog.Options(options_value)
 
-        fileName, filtr = QFileDialog.getSaveFileName(self,
-                "QFileDialog.getSaveFileName()",
-                self._save_file_name_label.text(),
-                "All Files (*);;Text Files (*.txt)", "", options)
+        fileName, _ = QFileDialog.getSaveFileName(self, "QFileDialog.getSaveFileName()",
+                                                  self._save_file_name_label.text(),
+                                                  "All Files (*);;Text Files (*.txt)", "", options)
         if fileName:
             self._save_file_name_label.setText(fileName)
 
     @Slot()
     def critical_message(self):
-        reply = QMessageBox.critical(self, "QMessageBox.critical()",
-                Dialog.MESSAGE,
-                QMessageBox.Abort | QMessageBox.Retry | QMessageBox.Ignore)
-        if reply == QMessageBox.Abort:
+        m = dedent("""\
+                   Activating the liquid oxygen stirring fans caused an
+                   explosion in one of the tanks. Liquid oxygen levels
+                   are getting low. This may jeopardize the moon landing mission.""")
+        msg_box = QMessageBox(QMessageBox.Icon.Critical, "QMessageBox.critical()",
+                              "Houston, we have a problem",
+                              QMessageBox.StandardButton.Abort | QMessageBox.StandardButton.Retry
+                              | QMessageBox.StandardButton.Ignore, self)
+        msg_box.setInformativeText(m)
+        reply = msg_box.exec()
+        if reply == QMessageBox.StandardButton.Abort:
             self._critical_label.setText("Abort")
-        elif reply == QMessageBox.Retry:
+        elif reply == QMessageBox.StandardButton.Retry:
             self._critical_label.setText("Retry")
         else:
             self._critical_label.setText("Ignore")
 
     @Slot()
     def information_message(self):
-        reply = QMessageBox.information(self,
-                "QMessageBox.information()", Dialog.MESSAGE)
-        if reply == QMessageBox.Ok:
+        m = dedent("""\
+                   This phrase was often used by public address announcers at
+                   the conclusion of Elvis Presley concerts in order to
+                   disperse audiences who lingered in hopes of an encore.
+                   It has since become a catchphrase and punchline.""")
+        msg_box = QMessageBox(QMessageBox.Icon.Information, "QMessageBox.information()",
+                              "Elvis has left the building.",
+                              QMessageBox.StandardButton.Ok, self)
+        msg_box.setInformativeText(m)
+        reply = msg_box.exec()
+        if reply == QMessageBox.StandardButton.Ok:
             self._information_label.setText("OK")
         else:
             self._information_label.setText("Escape")
 
     @Slot()
     def question_message(self):
-        reply = QMessageBox.question(self, "QMessageBox.question()",
-                Dialog.MESSAGE,
-                QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
-        if reply == QMessageBox.Yes:
+        m = dedent("""\
+                   A cheeseburger is a hamburger topped with cheese.
+                   Traditionally, the slice of cheese is placed on top of the
+                   meat patty. The cheese is usually added to the cooking
+                   hamburger patty shortly before serving, which allows the
+                   cheese to melt.""")
+        msg_box = QMessageBox(QMessageBox.Icon.Question, "QMessageBox.question()",
+                              "Would you like cheese with that?",
+                              QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                              | QMessageBox.StandardButton.Cancel)
+        msg_box.setInformativeText(m)
+        reply = msg_box.exec()
+        if reply == QMessageBox.StandardButton.Yes:
             self._question_label.setText("Yes")
-        elif reply == QMessageBox.No:
+        elif reply == QMessageBox.StandardButton.No:
             self._question_label.setText("No")
         else:
             self._question_label.setText("Cancel")
 
     @Slot()
     def warning_message(self):
-        msg_box = QMessageBox(QMessageBox.Warning,
-                "QMessageBox.warning()", Dialog.MESSAGE,
-                QMessageBox.NoButton, self)
-        msg_box.addButton("Save &Again", QMessageBox.AcceptRole)
-        msg_box.addButton("&Continue", QMessageBox.RejectRole)
-        if msg_box.exec() == QMessageBox.AcceptRole:
-            self._warning_label.setText("Save Again")
+        msg_box = QMessageBox(QMessageBox.Icon.Warning, "QMessageBox.warning()",
+                              "Delete the only copy of your movie manuscript?",
+                              QMessageBox.StandardButton.NoButton, self)
+        m = "You've been working on this manuscript for 738 days now. Hang in there!"
+        msg_box.setInformativeText(m)
+        msg_box.setDetailedText('"A long time ago in a galaxy far, far away...."')
+        msg_box.addButton("&Keep", QMessageBox.ButtonRole.AcceptRole)
+        msg_box.addButton("Delete", QMessageBox.ButtonRole.RejectRole)
+        if msg_box.exec() == QMessageBox.ButtonRole.AcceptRole:
+            self._warning_label.setText("Keep")
         else:
-            self._warning_label.setText("Continue")
+            self._warning_label.setText("Delete")
 
     @Slot()
     def error_message(self):
-        self._error_message_dialog.showMessage("This dialog shows and remembers "
-                "error messages. If the checkbox is checked (as it is by "
-                "default), the shown message will be shown again, but if the "
-                "user unchecks the box the message will not appear again if "
-                "QErrorMessage.showMessage() is called with the same message.")
-        self._error_label.setText("If the box is unchecked, the message won't "
-                "appear again.")
+        m = dedent("""\
+                   This dialog shows and remembers error messages. If the
+                   user chooses to not  show the dialog again, the dialog
+                   will not appear again if QErrorMessage.showMessage()
+                   is called with the same message.""")
+        self._error_message_dialog.showMessage(m)
+        m = dedent("""\
+                   You can queue up error messages, and they will be
+                   shown one after each other. Each message maintains
+                   its own state for whether it will be shown again
+                   the next time QErrorMessage::showMessage() is called
+                   with the same message.""")
+        self._error_message_dialog.showMessage(m)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    translator = QTranslator(app)
+    if translator.load(QLocale.system(), "qtbase", "_",
+                       QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
+        app.installTranslator(translator)
     dialog = Dialog()
     availableGeometry = dialog.screen().availableGeometry()
     dialog.resize(availableGeometry.width() / 3, availableGeometry.height() * 2 / 3)

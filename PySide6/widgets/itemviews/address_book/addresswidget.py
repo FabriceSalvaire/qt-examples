@@ -1,6 +1,7 @@
 # Copyright (C) 2011 Arun Srinivasan <rulfzid@gmail.com>
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 try:
     import cpickle as pickle
@@ -67,11 +68,11 @@ class AddressWidget(QTabWidget):
             # Step 2: get the index of the newly created row and use it.
             # to set the name
             ix = self._table_model.index(0, 0, QModelIndex())
-            self._table_model.setData(ix, address["name"], Qt.EditRole)
+            self._table_model.setData(ix, address["name"], Qt.ItemDataRole.EditRole)
 
             # Step 3: lather, rinse, repeat for the address.
             ix = self._table_model.index(0, 1, QModelIndex())
-            self._table_model.setData(ix, address["address"], Qt.EditRole)
+            self._table_model.setData(ix, address["address"], Qt.ItemDataRole.EditRole)
 
             # Remove the newAddressTab, as we now have at least one
             # address in the model.
@@ -98,9 +99,9 @@ class AddressWidget(QTabWidget):
 
         row = proxy_model.mapToSource(indexes[0]).row()
         ix = self._table_model.index(row, 0, QModelIndex())
-        name = self._table_model.data(ix, Qt.DisplayRole)
+        name = self._table_model.data(ix, Qt.ItemDataRole.DisplayRole)
         ix = self._table_model.index(row, 1, QModelIndex())
-        address = self._table_model.data(ix, Qt.DisplayRole)
+        address = self._table_model.data(ix, Qt.ItemDataRole.DisplayRole)
 
         # Open an addDialogWidget, and only allow the user to edit the address.
         add_dialog = AddDialogWidget()
@@ -115,7 +116,7 @@ class AddressWidget(QTabWidget):
             new_address = add_dialog.address
             if new_address != address:
                 ix = self._table_model.index(row, 1, QModelIndex())
-                self._table_model.setData(ix, new_address, Qt.EditRole)
+                self._table_model.setData(ix, new_address, Qt.ItemDataRole.EditRole)
 
     @Slot()
     def remove_entry(self):
@@ -148,11 +149,11 @@ class AddressWidget(QTabWidget):
             table_view = QTableView()
             table_view.setModel(proxy_model)
             table_view.setSortingEnabled(True)
-            table_view.setSelectionBehavior(QAbstractItemView.SelectRows)
+            table_view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
             table_view.horizontalHeader().setStretchLastSection(True)
             table_view.verticalHeader().hide()
-            table_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
-            table_view.setSelectionMode(QAbstractItemView.SingleSelection)
+            table_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+            table_view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
 
             # This here be the magic: we use the group name (e.g. "ABC") to
             # build the regex for the QSortFilterProxyModel for the group's
@@ -161,13 +162,14 @@ class AddressWidget(QTabWidget):
             # "A", "B", or "C". Notice that we set it to be case-insensitive.
             re = QRegularExpression(f"^[{group}].*")
             assert re.isValid()
-            re.setPatternOptions(QRegularExpression.CaseInsensitiveOption)
+            re.setPatternOptions(QRegularExpression.PatternOption.CaseInsensitiveOption)
             proxy_model.setFilterRegularExpression(re)
             proxy_model.setFilterKeyColumn(0)  # Filter on the "name" column
-            proxy_model.sort(0, Qt.AscendingOrder)
+            proxy_model.sort(0, Qt.SortOrder.AscendingOrder)
 
-            # This prevents an application crash (see: https://www.qtcentre.org/threads/58874-QListView-SelectionModel-selectionChanged-Crash)
-            viewselectionmodel = table_view.selectionModel()
+            # This prevents an application crash (see:
+            # https://www.qtcentre.org/threads/58874-QListView-SelectionModel-selectionChanged-Crash)  # noqa: E501
+            self.viewselectionmodel = table_view.selectionModel()
             table_view.selectionModel().selectionChanged.connect(self.selection_changed)
 
             self.addTab(table_view, group)

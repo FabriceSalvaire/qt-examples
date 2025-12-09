@@ -1,5 +1,5 @@
-Task Menu Extension (Designer)
-==============================
+Task Menu Extension Example
+===========================
 
 This example shows how to add custom widgets to Qt Designer,
 which can be launched with `pyside6-designer`, and to extend

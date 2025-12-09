@@ -1,6 +1,7 @@
 # Copyright (C) 2011 Arun Srinivasan <rulfzid@gmail.com>
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
@@ -25,16 +26,19 @@ class MainWindow(QMainWindow):
         tool_menu = self.menuBar().addMenu("&Tools")
 
         # Populate the File menu
-        open_action = self.create_action("&Open...", file_menu, self.open_file)
-        save_action = self.create_action("&Save As...", file_menu, self.save_file)
+        self.open_action = self.create_action("&Open...", file_menu, self.open_file)
+        self.save_action = self.create_action("&Save As...", file_menu, self.save_file)
         file_menu.addSeparator()
-        exit_action = self.create_action("E&xit", file_menu, self.close)
+        self.exit_action = self.create_action("E&xit", file_menu, self.close)
 
         # Populate the Tools menu
-        add_action = self.create_action("&Add Entry...", tool_menu, self._address_widget.add_entry)
-        self._edit_action = self.create_action("&Edit Entry...", tool_menu, self._address_widget.edit_entry)
+        self.add_action = self.create_action(
+            "&Add Entry...", tool_menu, self._address_widget.add_entry)
+        self._edit_action = self.create_action(
+            "&Edit Entry...", tool_menu, self._address_widget.edit_entry)
         tool_menu.addSeparator()
-        self._remove_action = self.create_action("&Remove Entry", tool_menu, self._address_widget.remove_entry)
+        self._remove_action = self.create_action(
+            "&Remove Entry", tool_menu, self._address_widget.remove_entry)
 
         # Disable the edit and remove menu items initially, as there are
         # no items yet.

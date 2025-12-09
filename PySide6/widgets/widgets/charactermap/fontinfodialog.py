@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import Qt, qVersion, qFuzzyCompare
 from PySide6.QtGui import QGuiApplication, QFontDatabase
@@ -23,7 +24,7 @@ class FontInfoDialog(QDialog):
         text_edit.setReadOnly(True)
         text_edit.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
         main_layout.addWidget(text_edit)
-        button_box = QDialogButtonBox(QDialogButtonBox.Close, self)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Close, self)
         button_box.rejected.connect(self.reject)
         main_layout.addWidget(button_box)
 

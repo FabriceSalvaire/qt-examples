@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/dialogs/trivialwizard example from Qt v5.x"""
 
@@ -15,7 +16,7 @@ def create_intro_page():
     page.setTitle("Introduction")
 
     label = QLabel("This wizard will help you register your copy of "
-            "Super Product Two.")
+                   "Super Product Two.")
     label.setWordWrap(True)
 
     layout = QVBoxLayout(page)

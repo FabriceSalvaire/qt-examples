@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 import weakref
@@ -20,15 +21,13 @@ def random(boundary):
 
 class Edge(QGraphicsItem):
 
-    item_type = QGraphicsItem.UserType + 2
-
     def __init__(self, sourceNode, destNode):
         super().__init__()
 
         self._arrow_size = 10.0
         self._source_point = QPointF()
         self._dest_point = QPointF()
-        self.setAcceptedMouseButtons(Qt.NoButton)
+        self.setAcceptedMouseButtons(Qt.MouseButton.NoButton)
         self.source = weakref.ref(sourceNode)
         self.dest = weakref.ref(destNode)
         self.source().add_edge(self)
@@ -36,7 +35,7 @@ class Edge(QGraphicsItem):
         self.adjust()
 
     def item_type(self):
-        return Edge.item_type
+        return QGraphicsItem.UserType + 2
 
     def source_node(self):
         return self.source()
@@ -91,7 +90,8 @@ class Edge(QGraphicsItem):
         if line.length() == 0.0:
             return
 
-        painter.setPen(QPen(Qt.black, 1, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        painter.setPen(QPen(Qt.GlobalColor.black, 1, Qt.PenStyle.SolidLine,
+                            Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
         painter.drawLine(line)
 
         # Draw the arrows if there's enough room.
@@ -113,13 +113,12 @@ class Edge(QGraphicsItem):
                               math.cos(angle - math.pi + math.pi / 3) * self._arrow_size)
         dest_arrow_p2 = self._dest_point + arrow_head2
 
-        painter.setBrush(Qt.black)
+        painter.setBrush(Qt.GlobalColor.black)
         painter.drawPolygon(QPolygonF([line.p1(), source_arrow_p1, source_arrow_p2]))
         painter.drawPolygon(QPolygonF([line.p2(), dest_arrow_p1, dest_arrow_p2]))
 
 
 class Node(QGraphicsItem):
-    item_type = QGraphicsItem.UserType + 1
 
     def __init__(self, graphWidget):
         super().__init__()
@@ -127,13 +126,13 @@ class Node(QGraphicsItem):
         self.graph = weakref.ref(graphWidget)
         self._edge_list = []
         self._new_pos = QPointF()
-        self.setFlag(QGraphicsItem.ItemIsMovable)
-        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
-        self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
+        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges)
+        self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
         self.setZValue(-1)
 
     def item_type(self):
-        return Node.item_type
+        return QGraphicsItem.UserType + 1
 
     def add_edge(self, edge):
         self._edge_list.append(weakref.ref(edge))
@@ -157,7 +156,7 @@ class Node(QGraphicsItem):
             line = QLineF(self.mapFromItem(item, 0, 0), QPointF(0, 0))
             dx = line.dx()
             dy = line.dy()
-            l = 2.0 * (dx * dx + dy * dy)
+            l = 2.0 * (dx * dx + dy * dy)  # noqa: E741
             if l > 0:
                 xvel += (dx * 150.0) / l
                 yvel += (dy * 150.0) / l
@@ -192,7 +191,7 @@ class Node(QGraphicsItem):
     def boundingRect(self):
         adjust = 2.0
         return QRectF(-10 - adjust, -10 - adjust,
-                             23 + adjust, 23 + adjust)
+                      23 + adjust, 23 + adjust)
 
     def shape(self):
         path = QPainterPath()
@@ -200,26 +199,26 @@ class Node(QGraphicsItem):
         return path
 
     def paint(self, painter, option, widget):
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(Qt.darkGray)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(Qt.GlobalColor.darkGray)
         painter.drawEllipse(-7, -7, 20, 20)
 
         gradient = QRadialGradient(-3, -3, 10)
-        if option.state & QStyle.State_Sunken:
+        if option.state & QStyle.StateFlag.State_Sunken:
             gradient.setCenter(3, 3)
             gradient.setFocalPoint(3, 3)
-            gradient.setColorAt(1, QColor(Qt.yellow).lighter(120))
-            gradient.setColorAt(0, QColor(Qt.darkYellow).lighter(120))
+            gradient.setColorAt(1, QColor(Qt.GlobalColor.yellow).lighter(120))
+            gradient.setColorAt(0, QColor(Qt.GlobalColor.darkYellow).lighter(120))
         else:
-            gradient.setColorAt(0, Qt.yellow)
-            gradient.setColorAt(1, Qt.darkYellow)
+            gradient.setColorAt(0, Qt.GlobalColor.yellow)
+            gradient.setColorAt(1, Qt.GlobalColor.darkYellow)
 
         painter.setBrush(QBrush(gradient))
-        painter.setPen(QPen(Qt.black, 0))
+        painter.setPen(QPen(Qt.GlobalColor.black, 0))
         painter.drawEllipse(-10, -10, 20, 20)
 
     def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemPositionChange:
+        if change == QGraphicsItem.GraphicsItemChange.ItemPositionChange:
             for edge in self._edge_list:
                 edge().adjust()
             self.graph().item_moved()
@@ -242,13 +241,13 @@ class GraphWidget(QGraphicsView):
         self._timer_id = 0
 
         scene = QGraphicsScene(self)
-        scene.setItemIndexMethod(QGraphicsScene.NoIndex)
+        scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
         scene.setSceneRect(-200, -200, 400, 400)
         self.setScene(scene)
-        self.setCacheMode(QGraphicsView.CacheBackground)
-        self.setRenderHint(QPainter.Antialiasing)
-        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        self.setResizeAnchor(QGraphicsView.AnchorViewCenter)
+        self.setCacheMode(QGraphicsView.CacheModeFlag.CacheBackground)
+        self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setTransformationAnchor(QGraphicsView.ViewportAnchor.AnchorUnderMouse)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
 
         node1 = Node(self)
         node2 = Node(self)
@@ -302,19 +301,19 @@ class GraphWidget(QGraphicsView):
     def keyPressEvent(self, event):
         key = event.key()
 
-        if key == Qt.Key_Up:
+        if key == Qt.Key.Key_Up:
             self._center_node.moveBy(0, -20)
-        elif key == Qt.Key_Down:
+        elif key == Qt.Key.Key_Down:
             self._center_node.moveBy(0, 20)
-        elif key == Qt.Key_Left:
+        elif key == Qt.Key.Key_Left:
             self._center_node.moveBy(-20, 0)
-        elif key == Qt.Key_Right:
+        elif key == Qt.Key.Key_Right:
             self._center_node.moveBy(20, 0)
-        elif key == Qt.Key_Plus:
+        elif key == Qt.Key.Key_Plus:
             self.scale_view(1.2)
-        elif key == Qt.Key_Minus:
+        elif key == Qt.Key.Key_Minus:
             self.scale_view(1 / 1.2)
-        elif key == Qt.Key_Space or key == Qt.Key_Enter:
+        elif key == Qt.Key.Key_Space or key == Qt.Key.Key_Enter:
             for item in self.scene().items():
                 if isinstance(item, Node):
                     item.setPos(-150 + random(300), -150 + random(300))
@@ -348,13 +347,13 @@ class GraphWidget(QGraphicsView):
         bottom_shadow = QRectF(scene_rect.left() + 5, scene_rect.bottom(),
                                scene_rect.width(), 5)
         if right_shadow.intersects(rect) or right_shadow.contains(rect):
-                painter.fillRect(right_shadow, Qt.darkGray)
+            painter.fillRect(right_shadow, Qt.darkGray)
         if bottom_shadow.intersects(rect) or bottom_shadow.contains(rect):
-                painter.fillRect(bottom_shadow, Qt.darkGray)
+            painter.fillRect(bottom_shadow, Qt.darkGray)
 
         # Fill.
         gradient = QLinearGradient(scene_rect.topLeft(), scene_rect.bottomRight())
-        gradient.setColorAt(0, Qt.white)
+        gradient.setColorAt(0, Qt.GlobalColor.white)
         gradient.setColorAt(1, Qt.lightGray)
         painter.fillRect(rect.intersected(scene_rect), QBrush(gradient))
         painter.setBrush(Qt.NoBrush)
@@ -362,7 +361,7 @@ class GraphWidget(QGraphicsView):
 
         # Text.
         text_rect = QRectF(scene_rect.left() + 4, scene_rect.top() + 4,
-                                 scene_rect.width() - 4, scene_rect.height() - 4)
+                           scene_rect.width() - 4, scene_rect.height() - 4)
         message = self.tr("Click and drag the nodes around, and zoom with the "
                           "mouse wheel or the '+' and '-' keys")
 
@@ -372,11 +371,12 @@ class GraphWidget(QGraphicsView):
         painter.setFont(font)
         painter.setPen(Qt.lightGray)
         painter.drawText(text_rect.translated(2, 2), message)
-        painter.setPen(Qt.black)
+        painter.setPen(Qt.GlobalColor.black)
         painter.drawText(text_rect, message)
 
     def scale_view(self, scaleFactor):
-        factor = self.transform().scale(scaleFactor, scaleFactor).mapRect(QRectF(0, 0, 1, 1)).width()
+        factor = self.transform().scale(scaleFactor, scaleFactor).mapRect(
+            QRectF(0, 0, 1, 1)).width()
 
         if factor < 0.07 or factor > 100:
             return

@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
@@ -9,7 +10,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QListWidget,
                                QMainWindow)
 
 
-import linguist_rc
+import linguist_rc  # noqa: F401
 
 
 class Window(QMainWindow):
@@ -21,10 +22,10 @@ class Window(QMainWindow):
         quit_action.triggered.connect(self.close)
         help_menu = self.menuBar().addMenu(self.tr("&Help"))
         about_qt_action = help_menu.addAction(self.tr("About Qt"))
-        about_qt_action.triggered.connect(qApp.aboutQt)
+        about_qt_action.triggered.connect(qApp.aboutQt)  # noqa: F821
 
         self._list_widget = QListWidget()
-        self._list_widget.setSelectionMode(QAbstractItemView.MultiSelection)
+        self._list_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self._list_widget.selectionModel().selectionChanged.connect(self.selection_changed)
         self._list_widget.addItem("C++")
         self._list_widget.addItem("Java")
@@ -41,7 +42,7 @@ class Window(QMainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    path = QLibraryInfo.path(QLibraryInfo.TranslationsPath)
+    path = QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)
     translator = QTranslator(app)
     if translator.load(QLocale.system(), 'qtbase', '_', path):
         app.installTranslator(translator)

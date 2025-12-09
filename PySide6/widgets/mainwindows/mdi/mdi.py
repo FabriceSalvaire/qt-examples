@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/mainwindows/mdi example from Qt v5.x, originating from PyQt"""
 
@@ -9,12 +10,10 @@ from functools import partial
 import sys
 
 from PySide6.QtCore import (QByteArray, QFile, QFileInfo, QSettings,
-        QSaveFile, QTextStream, Qt, Slot)
+                            QSaveFile, QTextStream, Qt, Slot)
 from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import (QApplication, QFileDialog, QMainWindow,
-        QMdiArea, QMessageBox, QTextEdit)
-
-import mdi_rc
+                               QMdiArea, QMessageBox, QTextEdit)
 
 
 class MdiChild(QTextEdit):
@@ -23,7 +22,7 @@ class MdiChild(QTextEdit):
     def __init__(self):
         super().__init__()
 
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self._is_untitled = True
 
     def new_file(self):
@@ -36,14 +35,14 @@ class MdiChild(QTextEdit):
 
     def load_file(self, fileName):
         file = QFile(fileName)
-        if not file.open(QFile.ReadOnly | QFile.Text):
+        if not file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text):
             reason = file.errorString()
             message = f"Cannot read file {fileName}:\n{reason}."
             QMessageBox.warning(self, "MDI", message)
             return False
 
         instr = QTextStream(file)
-        with QApplication.setOverrideCursor(Qt.WaitCursor):
+        with QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor):
             self.setPlainText(instr.readAll())
 
         self.set_current_file(fileName)
@@ -67,9 +66,9 @@ class MdiChild(QTextEdit):
 
     def save_file(self, fileName):
         error = None
-        with QApplication.setOverrideCursor(Qt.WaitCursor):
+        with QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor):
             file = QSaveFile(fileName)
-            if file.open(QFile.WriteOnly | QFile.Text):
+            if file.open(QFile.OpenModeFlag.WriteOnly | QFile.OpenModeFlag.Text):
                 outstr = QTextStream(file)
                 outstr << self.toPlainText()
                 if not file.commit():
@@ -106,7 +105,7 @@ class MdiChild(QTextEdit):
             f = self.user_friendly_current_file()
             message = f"'{f}' has been modified.\nDo you want to save your changes?"
             ret = QMessageBox.warning(self, "MDI", message,
-                    QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+                                      QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
 
             if ret == QMessageBox.Save:
                 return self.save()
@@ -132,8 +131,8 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self._mdi_area = QMdiArea()
-        self._mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self._mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self._mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self._mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setCentralWidget(self._mdi_area)
 
         self._mdi_area.subWindowActivated.connect(self.update_menus)
@@ -208,8 +207,8 @@ class MainWindow(QMainWindow):
     @Slot()
     def about(self):
         QMessageBox.about(self, "About MDI",
-                "The <b>MDI</b> example demonstrates how to write multiple "
-                "document interface applications using Qt.")
+                          "The <b>MDI</b> example demonstrates how to write multiple "
+                          "document interface applications using Qt.")
 
     @Slot()
     def update_menus(self):
@@ -225,8 +224,8 @@ class MainWindow(QMainWindow):
         self._previous_act.setEnabled(has_mdi_child)
         self._separator_act.setVisible(has_mdi_child)
 
-        has_selection = (self.active_mdi_child() is not None and
-                        self.active_mdi_child().textCursor().hasSelection())
+        has_selection = (self.active_mdi_child() is not None
+                         and self.active_mdi_child().textCursor().hasSelection())
         self._cut_act.setEnabled(has_selection)
         self._copy_act.setEnabled(has_selection)
 
@@ -271,82 +270,83 @@ class MainWindow(QMainWindow):
 
     def create_actions(self):
 
-        icon = QIcon.fromTheme("document-new", QIcon(':/images/new.png'))
-        self._new_act = QAction(icon, "&New", self,
-                shortcut=QKeySequence.New, statusTip="Create a new file",
-                triggered=self.new_file)
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.DocumentNew)
+        self._new_act = QAction(icon, "&New", self, shortcut=QKeySequence.StandardKey.New,
+                                statusTip="Create a new file", triggered=self.new_file)
 
-        icon = QIcon.fromTheme("document-open", QIcon(':/images/open.png'))
-        self._open_act = QAction(icon, "&Open...", self,
-                shortcut=QKeySequence.Open, statusTip="Open an existing file",
-                triggered=self.open)
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.DocumentOpen)
+        self._open_act = QAction(icon, "&Open...", self, shortcut=QKeySequence.StandardKey.Open,
+                                 statusTip="Open an existing file", triggered=self.open)
 
-        icon = QIcon.fromTheme("document-save", QIcon(':/images/save.png'))
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.DocumentSave)
         self._save_act = QAction(icon, "&Save", self,
-                shortcut=QKeySequence.Save,
-                statusTip="Save the document to disk", triggered=self.save)
+                                 shortcut=QKeySequence.StandardKey.Save,
+                                 statusTip="Save the document to disk", triggered=self.save)
 
         self._save_as_act = QAction("Save &As...", self,
-                shortcut=QKeySequence.SaveAs,
-                statusTip="Save the document under a new name",
-                triggered=self.save_as)
+                                    shortcut=QKeySequence.StandardKey.SaveAs,
+                                    statusTip="Save the document under a new name",
+                                    triggered=self.save_as)
 
-        self._exit_act = QAction("E&xit", self, shortcut=QKeySequence.Quit,
-                statusTip="Exit the application",
-                triggered=QApplication.instance().closeAllWindows)
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.ApplicationExit)
+        self._exit_act = QAction(icon, "E&xit", self, shortcut=QKeySequence.StandardKey.Quit,
+                                 statusTip="Exit the application",
+                                 triggered=QApplication.instance().closeAllWindows)
 
-        icon = QIcon.fromTheme("edit-cut", QIcon(':/images/cut.png'))
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.EditCut)
         self._cut_act = QAction(icon, "Cu&t", self,
-                shortcut=QKeySequence.Cut,
-                statusTip="Cut the current selection's contents to the clipboard",
-                triggered=self.cut)
+                                shortcut=QKeySequence.StandardKey.Cut,
+                                statusTip="Cut the current selection's contents to the clipboard",
+                                triggered=self.cut)
 
-        icon = QIcon.fromTheme("edit-copy", QIcon(':/images/copy.png'))
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.EditCopy)
         self._copy_act = QAction(icon, "&Copy", self,
-                shortcut=QKeySequence.Copy,
-                statusTip="Copy the current selection's contents to the clipboard",
-                triggered=self.copy)
+                                 shortcut=QKeySequence.StandardKey.Copy,
+                                 statusTip="Copy the current selection's contents to the clipboard",
+                                 triggered=self.copy)
 
-        icon = QIcon.fromTheme("edit-paste", QIcon(':/images/paste.png'))
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.EditPaste)
         self._paste_act = QAction(icon, "&Paste", self,
-                shortcut=QKeySequence.Paste,
-                statusTip="Paste the clipboard's contents into the current selection",
-                triggered=self.paste)
+                                  shortcut=QKeySequence.StandardKey.Paste,
+                                  statusTip="Paste the clipboard's contents into the current "
+                                            "selection",
+                                  triggered=self.paste)
 
         self._close_act = QAction("Cl&ose", self,
-                statusTip="Close the active window",
-                triggered=self._mdi_area.closeActiveSubWindow)
+                                  statusTip="Close the active window",
+                                  triggered=self._mdi_area.closeActiveSubWindow)
 
         self._close_all_act = QAction("Close &All", self,
-                statusTip="Close all the windows",
-                triggered=self._mdi_area.closeAllSubWindows)
+                                      statusTip="Close all the windows",
+                                      triggered=self._mdi_area.closeAllSubWindows)
 
         self._tile_act = QAction("&Tile", self, statusTip="Tile the windows",
-                triggered=self._mdi_area.tileSubWindows)
+                                 triggered=self._mdi_area.tileSubWindows)
 
         self._cascade_act = QAction("&Cascade", self,
-                statusTip="Cascade the windows",
-                triggered=self._mdi_area.cascadeSubWindows)
+                                    statusTip="Cascade the windows",
+                                    triggered=self._mdi_area.cascadeSubWindows)
 
-        self._next_act = QAction("Ne&xt", self, shortcut=QKeySequence.NextChild,
-                statusTip="Move the focus to the next window",
-                triggered=self._mdi_area.activateNextSubWindow)
+        self._next_act = QAction("Ne&xt", self, shortcut=QKeySequence.StandardKey.NextChild,
+                                 statusTip="Move the focus to the next window",
+                                 triggered=self._mdi_area.activateNextSubWindow)
 
         self._previous_act = QAction("Pre&vious", self,
-                shortcut=QKeySequence.PreviousChild,
-                statusTip="Move the focus to the previous window",
-                triggered=self._mdi_area.activatePreviousSubWindow)
+                                     shortcut=QKeySequence.StandardKey.PreviousChild,
+                                     statusTip="Move the focus to the previous window",
+                                     triggered=self._mdi_area.activatePreviousSubWindow)
 
         self._separator_act = QAction(self)
         self._separator_act.setSeparator(True)
 
-        self._about_act = QAction("&About", self,
-                statusTip="Show the application's About box",
-                triggered=self.about)
+        icon = QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout)
+        self._about_act = QAction(icon, "&About", self,
+                                  statusTip="Show the application's About box",
+                                  triggered=self.about)
 
         self._about_qt_act = QAction("About &Qt", self,
-                statusTip="Show the Qt library's About box",
-                triggered=QApplication.instance().aboutQt)
+                                     statusTip="Show the Qt library's About box",
+                                     triggered=QApplication.instance().aboutQt)
 
     def create_menus(self):
         self._file_menu = self.menuBar().addMenu("&File")
@@ -432,6 +432,7 @@ if __name__ == '__main__':
     options = argument_parser.parse_args()
 
     app = QApplication(sys.argv)
+
     main_win = MainWindow()
     for f in options.files:
         main_win.load(f)

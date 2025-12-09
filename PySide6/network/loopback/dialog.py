@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import QByteArray, Qt
 from PySide6.QtGui import QGuiApplication
@@ -29,8 +30,8 @@ class Dialog(QDialog):
         self.quit_button = QPushButton("&Quit")
 
         self.button_box = QDialogButtonBox()
-        self.button_box.addButton(self.start_button, QDialogButtonBox.ActionRole)
-        self.button_box.addButton(self.quit_button, QDialogButtonBox.RejectRole)
+        self.button_box.addButton(self.start_button, QDialogButtonBox.ButtonRole.ActionRole)
+        self.button_box.addButton(self.quit_button, QDialogButtonBox.ButtonRole.RejectRole)
 
         self.start_button.clicked.connect(self.start)
         self.quit_button.clicked.connect(self.close)
@@ -58,7 +59,7 @@ class Dialog(QDialog):
 
         self.start_button.setEnabled(False)
 
-        QGuiApplication.setOverrideCursor(Qt.WaitCursor)
+        QGuiApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
 
         self.bytes_written = 0
         self.bytes_received = 0
@@ -68,14 +69,15 @@ class Dialog(QDialog):
                 self,
                 "Loopback",
                 f"Unable to start the test {self.tcp_server.errorString()}",
-                QMessageBox.Retry | QMessageBox.Cancel,
+                QMessageBox.StandardButton.Retry | QMessageBox.StandardButton.Cancel,
             )
-            if ret == QMessageBox.Cancel:
+            if ret == QMessageBox.StandardButton.Cancel:
                 return
 
         self.server_status_label.setText("Listening")
         self.client_status_label.setText("Connecting")
-        self.tcp_client.connectToHost(QHostAddress.LocalHost, self.tcp_server.serverPort())
+        self.tcp_client.connectToHost(QHostAddress.SpecialAddress.LocalHost,
+                                      self.tcp_server.serverPort())
 
     def accept_connection(self):
 
@@ -131,7 +133,7 @@ class Dialog(QDialog):
         self.client_status_label.setText(f"Sent {self.bytes_written / (1024 ** 2)} MB")
 
     def display_error(self, socket_error: QAbstractSocket.SocketError):
-        if socket_error == QAbstractSocket.RemoteHostClosedError:
+        if socket_error == QAbstractSocket.SocketError.RemoteHostClosedError:
             return
 
         QMessageBox.information(

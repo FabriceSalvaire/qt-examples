@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction, QIcon
@@ -9,7 +10,7 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog,
                                QSpinBox, QStyle, QSystemTrayIcon, QTextEdit,
                                QVBoxLayout)
 
-import rc_systray
+import rc_systray  # noqa: F401
 
 
 class Window(QDialog):
@@ -156,21 +157,21 @@ class Window(QDialog):
         self._type_label = QLabel("Type:")
 
         self._type_combo_box = QComboBox()
-        self._type_combo_box.addItem("None", QSystemTrayIcon.NoIcon)
+        self._type_combo_box.addItem("None", QSystemTrayIcon.MessageIcon.NoIcon)
         self._type_combo_box.addItem(
-            self.style().standardIcon(QStyle.SP_MessageBoxInformation),
+            self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation),
             "Information",
-            QSystemTrayIcon.Information,
+            QSystemTrayIcon.MessageIcon.Information,
         )
         self._type_combo_box.addItem(
-            self.style().standardIcon(QStyle.SP_MessageBoxWarning),
+            self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxWarning),
             "Warning",
-            QSystemTrayIcon.Warning,
+            QSystemTrayIcon.MessageIcon.Warning,
         )
         self._type_combo_box.addItem(
-            self.style().standardIcon(QStyle.SP_MessageBoxCritical),
+            self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxCritical),
             "Critical",
-            QSystemTrayIcon.Critical,
+            QSystemTrayIcon.MessageIcon.Critical,
         )
         self._type_combo_box.addItem(QIcon(), "Custom icon", -1)
         self._type_combo_box.setCurrentIndex(1)
@@ -190,8 +191,8 @@ class Window(QDialog):
         self._body_label = QLabel("Body:")
 
         self._body_edit = QTextEdit()
-        self._body_edit.setPlainText("Don't believe me. Honestly, I don't have a clue."
-                                   "\nClick this balloon for details.")
+        self._body_edit.setPlainText("Don't believe me. Honestly, I don't have a clue.\n"
+                                     "Click this balloon for details.")
 
         self._show_message_button = QPushButton("Show Message")
         self._show_message_button.setDefault(True)
@@ -222,7 +223,7 @@ class Window(QDialog):
         self._restore_action.triggered.connect(self.showNormal)
 
         self._quit_action = QAction("Quit", self)
-        self._quit_action.triggered.connect(qApp.quit)
+        self._quit_action.triggered.connect(qApp.quit)  # noqa: F821
 
     def create_tray_icon(self):
         self._tray_icon_menu = QMenu(self)

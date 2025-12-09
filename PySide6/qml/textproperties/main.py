@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 from pathlib import Path
@@ -73,4 +74,6 @@ if __name__ == '__main__':
     if not engine.rootObjects():
         sys.exit(-1)
 
-    sys.exit(app.exec())
+    exit_code = app.exec()
+    del engine
+    sys.exit(exit_code)

@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
@@ -9,6 +10,7 @@ from PySide6.QtGui import QStandardItemModel, Qt
 from PySide6.QtCore import QModelIndex
 
 """PySide6 port of the widgets/itemviews/spinboxdelegate from Qt v6.x"""
+
 
 #! [0]
 class SpinBoxDelegate(QStyledItemDelegate):
@@ -31,7 +33,7 @@ class SpinBoxDelegate(QStyledItemDelegate):
 
 #! [2]
     def setEditorData(self, editor, index):
-        value = index.model().data(index, Qt.EditRole)
+        value = index.model().data(index, Qt.ItemDataRole.EditRole)
         editor.setValue(value)
 #! [2]
 
@@ -39,7 +41,7 @@ class SpinBoxDelegate(QStyledItemDelegate):
     def setModelData(self, editor, model, index):
         editor.interpretText()
         value = editor.value()
-        model.setData(index, value, Qt.EditRole)
+        model.setData(index, value, Qt.ItemDataRole.EditRole)
 #! [3]
 
 #! [4]
@@ -52,7 +54,7 @@ class SpinBoxDelegate(QStyledItemDelegate):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    model= QStandardItemModel(4, 2)
+    model = QStandardItemModel(4, 2)
     tableView = QTableView()
     tableView.setModel(model)
 

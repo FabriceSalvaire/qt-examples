@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the areachart example from Qt v6.x"""
 
@@ -49,11 +50,11 @@ class TestChart(QMainWindow):
         self.chart.addSeries(self.series)
         self.chart.setTitle("Simple areachart example")
         self.chart.createDefaultAxes()
-        self.chart.axes(Qt.Horizontal)[0].setRange(0, 20)
+        self.chart.axes(Qt.Orientation.Horizontal)[0].setRange(0, 20)
         self.chart.axes(Qt.Vertical)[0].setRange(0, 10)
 
         self._chart_view = QChartView(self.chart)
-        self._chart_view.setRenderHint(QPainter.Antialiasing)
+        self._chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         self.setCentralWidget(self._chart_view)
 

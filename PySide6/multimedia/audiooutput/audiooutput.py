@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the multimedia/audiooutput example from Qt v5.x, originating from PyQt"""
 
@@ -10,8 +11,7 @@ from struct import pack
 
 from PySide6.QtCore import (QByteArray, QIODevice, Qt, QSysInfo, QTimer,
                             qWarning, Slot)
-from PySide6.QtMultimedia import (QAudio, QAudioDevice, QAudioFormat,
-                                  QAudioSink, QMediaDevices)
+from PySide6.QtMultimedia import (QAudioFormat, QAudioSink, QMediaDevices, QtAudio)
 from PySide6.QtWidgets import (QApplication, QComboBox, QHBoxLayout, QLabel,
                                QMainWindow, QPushButton, QSlider,
                                QVBoxLayout, QWidget)
@@ -28,7 +28,7 @@ class Generator(QIODevice):
         self.generate_data(format, durationUs, sampleRate)
 
     def start(self):
-        self.open(QIODevice.ReadOnly)
+        self.open(QIODevice.OpenModeFlag.ReadOnly)
 
     def stop(self):
         self.m_pos = 0
@@ -39,25 +39,24 @@ class Generator(QIODevice):
 
         sample_size = fmt.bytesPerSample() * 8
         if sample_size == 8:
-            if fmt.sampleFormat() == QAudioFormat.UInt8:
-                scaler = lambda x: ((1.0 + x) / 2 * 255)
+            if fmt.sampleFormat() == QAudioFormat.SampleFormat.UInt8:
+                scaler = lambda x: ((1.0 + x) / 2 * 255)  # noqa: E731
                 pack_format = 'B'
-            elif fmt.sampleFormat() == QAudioFormat.Int16:
-                scaler = lambda x: x * 127
+            elif fmt.sampleFormat() == QAudioFormat.SampleFormat.Int16:
+                scaler = lambda x: x * 127  # noqa: E731
                 pack_format = 'b'
         elif sample_size == 16:
-            little_endian = QSysInfo.ByteOrder == QSysInfo.LittleEndian
-            if fmt.sampleFormat() == QAudioFormat.UInt8:
-                scaler = lambda x: (1.0 + x) / 2 * 65535
+            little_endian = QSysInfo.Endian.ByteOrder == QSysInfo.Endian.LittleEndian
+            if fmt.sampleFormat() == QAudioFormat.SampleFormat.UInt8:
+                scaler = lambda x: (1.0 + x) / 2 * 65535  # noqa: E731
                 pack_format = '<H' if little_endian else '>H'
-            elif fmt.sampleFormat() == QAudioFormat.Int16:
-                scaler = lambda x: x * 32767
+            elif fmt.sampleFormat() == QAudioFormat.SampleFormat.Int16:
+                scaler = lambda x: x * 32767  # noqa: E731
                 pack_format = '<h' if little_endian else '>h'
 
-        assert(pack_format != '')
+        assert pack_format != ''
 
         channel_bytes = fmt.bytesPerSample()
-        sample_bytes = fmt.channelCount() * channel_bytes
 
         length = (fmt.sampleRate() * fmt.channelCount() * channel_bytes) * durationUs // 100000
 
@@ -133,16 +132,15 @@ class AudioTest(QMainWindow):
 
         layout.addWidget(self.m_modeButton)
 
-        self.m_suspendResumeButton = QPushButton(
-                clicked=self.toggle_suspend_resume)
+        self.m_suspendResumeButton = QPushButton(clicked=self.toggle_suspend_resume)
         self.m_suspendResumeButton.setText(self.SUSPEND_LABEL)
 
         layout.addWidget(self.m_suspendResumeButton)
 
         volume_box = QHBoxLayout()
         volume_label = QLabel("Volume:")
-        self.m_volumeSlider = QSlider(Qt.Horizontal, minimum=0, maximum=100,
-                singleStep=10)
+        self.m_volumeSlider = QSlider(Qt.Orientation.Horizontal,
+                                      minimum=0, maximum=100, singleStep=10)
         self.m_volumeSlider.valueChanged.connect(self.volume_changed)
 
         volume_box.addWidget(volume_label)
@@ -160,15 +158,15 @@ class AudioTest(QMainWindow):
         self.m_format = QAudioFormat()
         self.m_format.setSampleRate(self.DATA_SAMPLE_RATE_HZ)
         self.m_format.setChannelCount(1)
-        self.m_format.setSampleFormat(QAudioFormat.Int16)
+        self.m_format.setSampleFormat(QAudioFormat.SampleFormat.Int16)
 
         info = self.m_devices[0]
         if not info.isFormatSupported(self.m_format):
             qWarning("Default format not supported - trying to use nearest")
             self.m_format = info.nearestFormat(self.m_format)
 
-        self.m_generator = Generator(self.m_format,
-                self.DURATION_SECONDS * 1000000, self.TONE_SAMPLE_RATE_HZ, self)
+        self.m_generator = Generator(self.m_format, self.DURATION_SECONDS * 1000000,
+                                     self.TONE_SAMPLE_RATE_HZ, self)
 
         self.create_audio_output()
 
@@ -180,11 +178,18 @@ class AudioTest(QMainWindow):
         self.m_audioSink.start(self.m_generator)
         self.m_volumeSlider.setValue(self.m_audioSink.volume() * 100)
 
-    @Slot(int)
-    def device_changed(self, index):
+    def closeEvent(self, e):
+        self.stop()
+        e.accept()
+
+    def stop(self):
         self.m_pullTimer.stop()
         self.m_generator.stop()
         self.m_audioSink.stop()
+
+    @Slot(int)
+    def device_changed(self, index):
+        self.stop()
         self.m_device = self.m_deviceBox.itemData(index)
 
         self.create_audio_output()
@@ -205,7 +210,7 @@ class AudioTest(QMainWindow):
 
     @Slot()
     def pull_timer_expired(self):
-        if self.m_audioSink is not None and self.m_audioSink.state() != QAudio.StoppedState:
+        if self.m_audioSink is not None and self.m_audioSink.state() != QtAudio.State.StoppedState:
             bytes_free = self.m_audioSink.bytesFree()
             data = self.m_generator.read(bytes_free)
             if data:
@@ -230,28 +235,28 @@ class AudioTest(QMainWindow):
 
     @Slot()
     def toggle_suspend_resume(self):
-        if self.m_audioSink.state() == QAudio.SuspendedState:
+        if self.m_audioSink.state() == QtAudio.State.SuspendedState:
             qWarning("status: Suspended, resume()")
             self.m_audioSink.resume()
             self.m_suspendResumeButton.setText(self.SUSPEND_LABEL)
-        elif self.m_audioSink.state() == QAudio.ActiveState:
+        elif self.m_audioSink.state() == QtAudio.State.ActiveState:
             qWarning("status: Active, suspend()")
             self.m_audioSink.suspend()
             self.m_suspendResumeButton.setText(self.RESUME_LABEL)
-        elif self.m_audioSink.state() == QAudio.StoppedState:
+        elif self.m_audioSink.state() == QtAudio.State.StoppedState:
             qWarning("status: Stopped, resume()")
             self.m_audioSink.resume()
             self.m_suspendResumeButton.setText(self.SUSPEND_LABEL)
-        elif self.m_audioSink.state() == QAudio.IdleState:
+        elif self.m_audioSink.state() == QtAudio.State.IdleState:
             qWarning("status: IdleState")
 
     state_map = {
-        QAudio.ActiveState: "ActiveState",
-        QAudio.SuspendedState: "SuspendedState",
-        QAudio.StoppedState: "StoppedState",
-        QAudio.IdleState: "IdleState"}
+        QtAudio.State.ActiveState: "ActiveState",
+        QtAudio.State.SuspendedState: "SuspendedState",
+        QtAudio.State.StoppedState: "StoppedState",
+        QtAudio.State.IdleState: "IdleState"}
 
-    @Slot("QAudio::State")
+    @Slot("QtAudio::State")
     def handle_state_changed(self, state):
         state = self.state_map.get(state, 'Unknown')
         qWarning(f"state = {state}")

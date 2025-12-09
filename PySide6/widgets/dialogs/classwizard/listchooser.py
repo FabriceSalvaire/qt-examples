@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import QRegularExpression, Property, Slot
 from PySide6.QtGui import QRegularExpressionValidator
@@ -27,13 +28,14 @@ class ValidatingInputDialog(QDialog):
         self._lineedit = QLineEdit()
         self._lineedit.setClearButtonEnabled(True)
         re = QRegularExpression(pattern)
-        assert(re.isValid())
+        assert re.isValid()
         self._validator = QRegularExpressionValidator(re, self)
         self._lineedit.setValidator(self._validator)
         self._form_layout.addRow(label, self._lineedit)
         layout.addLayout(self._form_layout)
 
-        bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        bb = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok
+                              | QDialogButtonBox.StandardButton.Cancel)
         layout.addWidget(bb)
         bb.rejected.connect(self.reject)
         bb.accepted.connect(self.accept)

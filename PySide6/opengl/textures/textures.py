@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the opengl/textures example from Qt v6.x showing the use
    of legacy OpenGL functions with QOpenGLVersionFunctionsFactory."""
@@ -24,7 +25,7 @@ except ImportError:
     messageBox.exec()
     sys.exit(1)
 
-import textures_rc
+import textures_rc  # noqa: F401
 
 
 class GLWidget(QOpenGLWidget):
@@ -32,12 +33,12 @@ class GLWidget(QOpenGLWidget):
     refCount = 0
 
     coords = (
-        ( ( +1, -1, -1 ), ( -1, -1, -1 ), ( -1, +1, -1 ), ( +1, +1, -1 ) ),
-        ( ( +1, +1, -1 ), ( -1, +1, -1 ), ( -1, +1, +1 ), ( +1, +1, +1 ) ),
-        ( ( +1, -1, +1 ), ( +1, -1, -1 ), ( +1, +1, -1 ), ( +1, +1, +1 ) ),
-        ( ( -1, -1, -1 ), ( -1, -1, +1 ), ( -1, +1, +1 ), ( -1, +1, -1 ) ),
-        ( ( +1, -1, +1 ), ( -1, -1, +1 ), ( -1, -1, -1 ), ( +1, -1, -1 ) ),
-        ( ( -1, -1, +1 ), ( +1, -1, +1 ), ( +1, +1, +1 ), ( -1, +1, +1 ) )
+        ((+1, -1, -1), (-1, -1, -1), (-1, +1, -1), (+1, +1, -1)),
+        ((+1, +1, -1), (-1, +1, -1), (-1, +1, +1), (+1, +1, +1)),
+        ((+1, -1, +1), (+1, -1, -1), (+1, +1, -1), (+1, +1, +1)),
+        ((-1, -1, -1), (-1, -1, +1), (-1, +1, +1), (-1, +1, -1)),
+        ((+1, -1, +1), (-1, -1, +1), (-1, -1, -1), (+1, -1, -1)),
+        ((-1, -1, +1), (+1, -1, +1), (+1, +1, +1), (-1, +1, +1))
     )
 
     clicked = Signal()
@@ -45,7 +46,7 @@ class GLWidget(QOpenGLWidget):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.clearColor = Qt.black
+        self.clearColor = Qt.GlobalColor.black
         self.xRot = 0
         self.yRot = 0
         self.zRot = 0
@@ -78,7 +79,7 @@ class GLWidget(QOpenGLWidget):
     def initializeGL(self):
         profile = QOpenGLVersionProfile()
         profile.setVersion(3, 2)
-        profile.setProfile(QSurfaceFormat.CompatibilityProfile)
+        profile.setProfile(QSurfaceFormat.OpenGLContextProfile.CompatibilityProfile)
         self.funcs = QOpenGLVersionFunctionsFactory.get(profile)
         self.funcs.initializeOpenGLFunctions()
 
@@ -124,7 +125,7 @@ class GLWidget(QOpenGLWidget):
         dx = pos.x() - self.lastPos.x()
         dy = pos.y() - self.lastPos.y()
 
-        if event.buttons() & Qt.LeftButton:
+        if event.buttons() & Qt.MouseButton.LeftButton:
             self.rotateBy(8 * dy, 8 * dx, 0)
         elif event.buttons() & Qt.RightButton:
             self.rotateBy(8 * dy, 0, 8 * dx)
@@ -186,7 +187,7 @@ class Window(QWidget):
                 mainLayout.addWidget(glw, i, j)
 
                 glw.clicked.connect(self.setCurrentGlWidget)
-                qApp.lastWindowClosed.connect(glw.freeGLResources)
+                qApp.lastWindowClosed.connect(glw.freeGLResources)  # noqa: F821
 
         self.currentGlWidget = self.glWidgets[0][0]
 

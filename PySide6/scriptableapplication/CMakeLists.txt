@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 3.16)
-cmake_policy(VERSION 3.16)
+# Copyright (C) 2023 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
+cmake_minimum_required(VERSION 3.18)
+cmake_policy(VERSION 3.18)
 
 # Enable policy to run automoc on generated files.
 if(POLICY CMP0071)
@@ -12,9 +15,7 @@ project(scriptableapplication)
 set(CMAKE_CXX_STANDARD 17)
 
 # Find required Qt packages.
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS Gui)
-find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS Core Gui Widgets)
 
 # Use provided python interpreter if given.
 if(NOT python_interpreter)
@@ -64,12 +65,23 @@ pyside_config(--shiboken-generator-path SHIBOKEN_GENERATOR_PATH)
 pyside_config(--pyside-path PYSIDE_PATH)
 
 pyside_config(--python-include-path PYTHON_INCLUDE_DIR)
-pyside_config(--shiboken-generator-include-path SHIBOKEN_GENERATOR_INCLUDE_DIR 1)
+pyside_config(--shiboken-include-path SHIBOKEN_INCLUDE_DIR 1)
 pyside_config(--pyside-include-path PYSIDE_INCLUDE_DIR 1)
 
 pyside_config(--python-link-flags-cmake PYTHON_LINKING_DATA 0)
 pyside_config(--shiboken-module-shared-libraries-cmake SHIBOKEN_MODULE_SHARED_LIBRARIES 0)
 pyside_config(--pyside-shared-libraries-cmake PYSIDE_SHARED_LIBRARIES 0)
+
+# Print the computed variables
+message(STATUS "Shiboken module path: ${SHIBOKEN_MODULE_PATH}")
+message(STATUS "Shiboken generator path: ${SHIBOKEN_GENERATOR_PATH}")
+message(STATUS "PySide path: ${PYSIDE_PATH}")
+message(STATUS "Python include path: ${PYTHON_INCLUDE_DIR}")
+message(STATUS "Shiboken include path: ${SHIBOKEN_INCLUDE_DIR}")
+message(STATUS "PySide include path: ${PYSIDE_INCLUDE_DIR}")
+message(STATUS "Python linking data: ${PYTHON_LINKING_DATA}")
+message(STATUS "Shiboken module shared libraries: ${SHIBOKEN_MODULE_SHARED_LIBRARIES}")
+message(STATUS "PySide shared libraries: ${PYSIDE_SHARED_LIBRARIES}")
 
 set(SHIBOKEN_PATH "${SHIBOKEN_GENERATOR_PATH}/shiboken6${CMAKE_EXECUTABLE_SUFFIX}")
 
@@ -100,7 +112,7 @@ set(WRAPPED_HEADER ${CMAKE_SOURCE_DIR}/wrappedclasses.h)
 set(TYPESYSTEM_FILE ${CMAKE_SOURCE_DIR}/scriptableapplication.xml)
 
 set(SHIBOKEN_OPTIONS --generator-set=shiboken --enable-parent-ctor-heuristic
-    --enable-pyside-extensions --enable-return-value-heuristic --use-isnull-as-nb_nonzero
+    --enable-pyside-extensions --enable-return-value-heuristic --use-isnull-as-nb-bool
     --avoid-protected-hack
     ${INCLUDES}
     -I${CMAKE_SOURCE_DIR}
@@ -166,7 +178,7 @@ target_sources(${PROJECT_NAME} PUBLIC ${SOURCES})
 
 # Apply relevant include and link flags.
 target_include_directories(${PROJECT_NAME} PRIVATE ${PYTHON_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${SHIBOKEN_GENERATOR_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${SHIBOKEN_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PYSIDE_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PYSIDE_ADDITIONAL_INCLUDES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR})

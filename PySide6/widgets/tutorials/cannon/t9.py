@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 # PySide6 tutorial 9
 
@@ -20,7 +21,7 @@ class LCDRange(QWidget):
         super().__init__(parent)
 
         lcd = QLCDNumber(2)
-        self.slider = QSlider(Qt.Horizontal)
+        self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setRange(0, 99)
         self.slider.setValue(0)
 
@@ -43,8 +44,8 @@ class LCDRange(QWidget):
     def set_range(self, minValue, maxValue):
         if minValue < 0 or maxValue > 99 or minValue > maxValue:
             qWarning(f"LCDRange::setRange({minValue}, {maxValue})\n"
-                    "\tRange must be 0..99\n"
-                    "\tand minValue must not be greater than maxValue")
+                     "\tRange must be 0..99\n"
+                     "\tand minValue must not be greater than maxValue")
             return
 
         self.slider.setRange(minValue, maxValue)
@@ -78,8 +79,8 @@ class CannonField(QWidget):
 
     def paintEvent(self, event):
         with QPainter(self) as painter:
-            painter.setPen(Qt.NoPen)
-            painter.setBrush(Qt.blue)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(Qt.GlobalColor.blue)
 
             painter.translate(0, self.rect().height())
             painter.drawPie(QRect(-35, -35, 70, 70), 0, 90 * 16)
@@ -92,9 +93,9 @@ class MyWidget(QWidget):
         super().__init__(parent)
 
         quit = QPushButton("Quit")
-        quit.setFont(QFont("Times", 18, QFont.Bold))
+        quit.setFont(QFont("Times", 18, QFont.Weight.Bold))
 
-        quit.clicked.connect(qApp.quit)
+        quit.clicked.connect(qApp.quit)  # noqa: F821
 
         angle = LCDRange()
         angle.set_range(5, 70)

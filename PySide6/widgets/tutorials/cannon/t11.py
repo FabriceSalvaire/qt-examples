@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 # PySide6 tutorial 11
 
@@ -8,7 +9,7 @@ import sys
 import math
 
 from PySide6.QtCore import QPoint, QRect, QTimer, Qt, Signal, Slot, qWarning
-from PySide6.QtGui import QColor, QFont, QPainter, QPalette, QRegion
+from PySide6.QtGui import QColor, QFont, QPainter, QPainterStateGuard, QPalette, QRegion
 from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout,
                                QLCDNumber, QPushButton, QSlider,
                                QVBoxLayout, QWidget)
@@ -22,7 +23,7 @@ class LCDRange(QWidget):
         super().__init__(parent)
 
         lcd = QLCDNumber(2)
-        self.slider = QSlider(Qt.Horizontal)
+        self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setRange(0, 99)
         self.slider.setValue(0)
 
@@ -45,8 +46,8 @@ class LCDRange(QWidget):
     def set_range(self, minValue, maxValue):
         if minValue < 0 or maxValue > 99 or minValue > maxValue:
             qWarning(f"LCDRange::setRange({minValue}, {maxValue})\n"
-                    "\tRange must be 0..99\n"
-                    "\tand minValue must not be greater than maxValue")
+                     "\tRange must be 0..99\n"
+                     "\tand minValue must not be greater than maxValue")
             return
 
         self.slider.setRange(minValue, maxValue)
@@ -127,22 +128,21 @@ class CannonField(QWidget):
                 self.paint_shot(painter)
 
     def paint_shot(self, painter):
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(Qt.black)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(Qt.GlobalColor.black)
         painter.drawRect(self.shot_rect())
 
     barrel_rect = QRect(33, -4, 15, 8)
 
     def paint_cannon(self, painter):
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(Qt.blue)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(Qt.GlobalColor.blue)
 
-        painter.save()
-        painter.translate(0, self.height())
-        painter.drawPie(QRect(-35, -35, 70, 70), 0, 90 * 16)
-        painter.rotate(-self._current_angle)
-        painter.drawRect(CannonField.barrel_rect)
-        painter.restore()
+        with QPainterStateGuard(painter):
+            painter.translate(0, self.height())
+            painter.drawPie(QRect(-35, -35, 70, 70), 0, 90 * 16)
+            painter.rotate(-self._current_angle)
+            painter.drawRect(CannonField.barrel_rect)
 
     def cannon_rect(self):
         result = QRect(0, 0, 50, 50)
@@ -173,9 +173,9 @@ class MyWidget(QWidget):
         super().__init__(parent)
 
         quit = QPushButton("&Quit")
-        quit.setFont(QFont("Times", 18, QFont.Bold))
+        quit.setFont(QFont("Times", 18, QFont.Weight.Bold))
 
-        quit.clicked.connect(qApp.quit)
+        quit.clicked.connect(qApp.quit)  # noqa: F821
 
         angle = LCDRange()
         angle.set_range(5, 70)
@@ -192,7 +192,7 @@ class MyWidget(QWidget):
         cannon_field.force_changed.connect(force.set_value)
 
         shoot = QPushButton("&Shoot")
-        shoot.setFont(QFont("Times", 18, QFont.Bold))
+        shoot.setFont(QFont("Times", 18, QFont.Weight.Bold))
 
         shoot.clicked.connect(cannon_field.shoot)
 

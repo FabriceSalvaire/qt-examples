@@ -1,0 +1,4 @@
+{
+    "files": ["main.py", "painteditemexample/Main.qml", "painteditemexample/qmldir",
+              "TextBalloon/textballoon.py"]
+}

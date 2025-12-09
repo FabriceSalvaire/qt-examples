@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
@@ -32,12 +33,12 @@ class ApplicationWindow(QMainWindow):
         # Main menu bar
         self.menu = self.menuBar()
         self.menu_file = self.menu.addMenu("File")
-        exit = QAction("Exit", self, triggered=qApp.quit)
+        exit = QAction("Exit", self, triggered=qApp.quit)  # noqa: F821
         self.menu_file.addAction(exit)
 
         self.menu_about = self.menu.addMenu("&About")
         about = QAction("About Qt", self, shortcut=QKeySequence(QKeySequence.HelpContents),
-                        triggered=qApp.aboutQt)
+                        triggered=qApp.aboutQt)  # noqa: F821
         self.menu_about.addAction(about)
 
         # Create an artificial color close to the original one

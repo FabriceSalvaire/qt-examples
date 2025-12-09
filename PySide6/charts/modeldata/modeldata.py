@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the Model Data example from Qt v5.x"""
 
@@ -9,7 +10,7 @@ from random import randrange
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, QRect, Qt
 from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (QApplication, QGridLayout, QHeaderView,
-    QTableView, QWidget)
+                               QTableView, QWidget)
 from PySide6.QtCharts import QChart, QChartView, QLineSeries, QVXYModelMapper
 
 
@@ -37,10 +38,10 @@ class CustomTableModel(QAbstractTableModel):
         return self.column_count
 
     def headerData(self, section, orientation, role):
-        if role != Qt.DisplayRole:
+        if role != Qt.ItemDataRole.DisplayRole:
             return None
 
-        if orientation == Qt.Horizontal:
+        if orientation == Qt.Orientation.Horizontal:
             if section % 2 == 0:
                 return "x"
             else:
@@ -48,12 +49,12 @@ class CustomTableModel(QAbstractTableModel):
         else:
             return str(section + 1)
 
-    def data(self, index, role=Qt.DisplayRole):
-        if role == Qt.DisplayRole:
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+        if role == Qt.ItemDataRole.DisplayRole:
             return self.input_data[index.row()][index.column()]
-        elif role == Qt.EditRole:
+        elif role == Qt.ItemDataRole.EditRole:
             return self.input_data[index.row()][index.column()]
-        elif role == Qt.BackgroundRole:
+        elif role == Qt.ItemDataRole.BackgroundRole:
             for color, rect in self.mapping.items():
                 if rect.contains(index.column(), index.row()):
                     return QColor(color)
@@ -61,8 +62,8 @@ class CustomTableModel(QAbstractTableModel):
             return QColor(Qt.white)
         return None
 
-    def setData(self, index, value, role=Qt.EditRole):
-        if index.isValid() and role == Qt.EditRole:
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
+        if index.isValid() and role == Qt.ItemDataRole.EditRole:
             self.input_data[index.row()][index.column()] = float(value)
             self.dataChanged.emit(index, index)
             return True
@@ -101,9 +102,6 @@ class TableWidget(QWidget):
         self.mapper.setModel(self.model)
         self.chart.addSeries(self.series)
 
-        # for storing color hex from the series
-        seriesColorHex = "#000000"
-
         # get the color of the series and use it for showing the mapped area
         self.model.add_mapping(self.series.pen().color().name(),
                                QRect(0, 0, 2, self.model.rowCount()))
@@ -125,7 +123,7 @@ class TableWidget(QWidget):
 
         self.chart.createDefaultAxes()
         self.chart_view = QChartView(self.chart)
-        self.chart_view.setRenderHint(QPainter.Antialiasing)
+        self.chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.chart_view.setMinimumSize(640, 480)
 
         # create main layout

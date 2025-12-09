@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import functools
 
@@ -18,6 +19,7 @@ ACCESSTOKEN_URL = "https://www.reddit.com/api/v1/access_token"
 NEW_URL = "https://oauth.reddit.com/new"
 HOT_URL = "https://oauth.reddit.com/hot"
 LIVE_THREADS_URL = "https://oauth.reddit.com/live/XXXX/about.json"
+
 
 class RedditWrapper(QObject):
 
@@ -78,7 +80,7 @@ class RedditWrapper(QObject):
 
         json = reply.readAll()
         document = QJsonDocument.fromJson(json)
-        assert(document.isObject())
+        assert document.isObject()
         root_object = document.object()
         data_object = root_object["data"]
         websocketUrl = QUrl(data_object["websocket_url"])

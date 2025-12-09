@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import random
 
@@ -8,7 +9,7 @@ from PySide6.QtGui import QVector3D
 from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
 
-QML_IMPORT_NAME = "ExamplePointGeometry"
+QML_IMPORT_NAME = "CustomGeometryExample"
 QML_IMPORT_MAJOR_VERSION = 1
 
 
@@ -47,5 +48,6 @@ class ExamplePointGeometry(QQuick3DGeometry):
         self.setPrimitiveType(QQuick3DGeometry.PrimitiveType.Points)
 
         self.addAttribute(
-            QQuick3DGeometry.Attribute.PositionSemantic, 0, QQuick3DGeometry.Attribute.F32Type
+            QQuick3DGeometry.Attribute.Semantic.PositionSemantic, 0,
+            QQuick3DGeometry.Attribute.ComponentType.F32Type
         )

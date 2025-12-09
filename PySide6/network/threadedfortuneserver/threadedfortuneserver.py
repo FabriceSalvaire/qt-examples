@@ -1,17 +1,18 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the network/threadedfortuneserver example from Qt v5.x, originating from PyQt"""
 
 import random
 
 from PySide6.QtCore import (Signal, QByteArray, QDataStream, QIODevice,
-        QThread, Qt)
+                            QThread, Qt)
 from PySide6.QtWidgets import (QApplication, QDialog, QHBoxLayout, QLabel,
-        QMessageBox, QPushButton, QVBoxLayout)
+                               QMessageBox, QPushButton, QVBoxLayout)
 from PySide6.QtNetwork import (QHostAddress, QNetworkInterface, QTcpServer,
-        QTcpSocket)
+                               QTcpSocket)
 
 
 class FortuneThread(QThread):
@@ -30,8 +31,8 @@ class FortuneThread(QThread):
             return
 
         block = QByteArray()
-        outstr = QDataStream(block, QIODevice.WriteOnly)
-        outstr.setVersion(QDataStream.Qt_4_0)
+        outstr = QDataStream(block, QIODevice.OpenModeFlag.WriteOnly)
+        outstr.setVersion(QDataStream.Version.Qt_4_0)
         outstr.writeUInt16(0)
         outstr.writeQString(self.text)
         outstr.device().seek(0)
@@ -67,7 +68,7 @@ class Dialog(QDialog):
         self.server = FortuneServer()
 
         status_label = QLabel()
-        status_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        status_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         status_label.setWordWrap(True)
         quit_button = QPushButton("Quit")
         quit_button.setAutoDefault(False)
@@ -75,21 +76,22 @@ class Dialog(QDialog):
         if not self.server.listen():
             reason = self.server.errorString()
             QMessageBox.critical(self, "Threaded Fortune Server",
-                    f"Unable to start the server: {reason}.")
+                                 f"Unable to start the server: {reason}.")
             self.close()
             return
 
         for ip_address in QNetworkInterface.allAddresses():
-            if ip_address != QHostAddress.LocalHost and ip_address.toIPv4Address() != 0:
+            if (ip_address != QHostAddress.SpecialAddress.LocalHost
+                    and ip_address.toIPv4Address() != 0):
                 break
         else:
-            ip_address = QHostAddress(QHostAddress.LocalHost)
+            ip_address = QHostAddress(QHostAddress.SpecialAddress.LocalHost)
 
         ip_address = ip_address.toString()
         port = self.server.serverPort()
 
         status_label.setText(f"The server is running on\n\nIP: {ip_address}\nport: {port}\n\n"
-                "Run the Fortune Client example now.")
+                             "Run the Fortune Client example now.")
 
         quit_button.clicked.connect(self.close)
 

@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the QtDBus pingpong example from Qt v6.x (pong server)"""
 
@@ -18,7 +19,7 @@ class Pong(QObject):
     @Slot(str, result=str)
     def ping(self, arg):
         print(f'pong: Received ping({arg})')
-        qApp.quit()
+        qApp.quit()  # noqa: F821
         return f'ping("{arg}") got called'
 
 

@@ -1,19 +1,24 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtWebEngine
 
 QtObject {
     id: root
 
-    property QtObject defaultProfile: WebEngineProfile {
+    property WebEngineProfilePrototype defaultProfilePrototype : WebEngineProfilePrototype {
         storageName: "Profile"
-        offTheRecord: false
+        Component.onCompleted: {
+            let fullVersionList = root.defaultProfilePrototype.instance().clientHints.fullVersionList;
+            fullVersionList["QuickNanoBrowser"] = "1.0";
+            root.defaultProfilePrototype.instance().clientHints.fullVersionList = fullVersionList;
+        }
     }
 
-    property QtObject otrProfile: WebEngineProfile {
-        offTheRecord: true
+    property WebEngineProfilePrototype otrPrototype : WebEngineProfilePrototype {
     }
 
     property Component browserWindowComponent: BrowserWindow {
@@ -23,18 +28,18 @@ QtObject {
         onClosing: destroy()
     }
     function createWindow(profile) {
-        var newWindow = browserWindowComponent.createObject(root);
+        var newWindow = browserWindowComponent.createObject(root) as BrowserWindow;
         newWindow.currentWebView.profile = profile;
         profile.downloadRequested.connect(newWindow.onDownloadRequested);
         return newWindow;
     }
     function createDialog(profile) {
-        var newDialog = browserDialogComponent.createObject(root);
+        var newDialog = browserDialogComponent.createObject(root) as BrowserDialog;
         newDialog.currentWebView.profile = profile;
         return newDialog;
     }
     function load(url) {
-        var browserWindow = createWindow(defaultProfile);
+        var browserWindow = createWindow(root.defaultProfilePrototype.instance());
         browserWindow.currentWebView.url = url;
     }
 }

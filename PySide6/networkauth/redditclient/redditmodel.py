@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import functools
 from PySide6.QtCore import (QAbstractTableModel, QJsonDocument, QModelIndex,
@@ -30,7 +31,7 @@ class RedditModel(QAbstractTableModel):
     def data(self, index, role):
         if not index.isValid():
             return None
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             children_object = self._threads[index.row()]
             data_object = children_object["data"]
             return data_object["title"]
@@ -51,7 +52,7 @@ class RedditModel(QAbstractTableModel):
         document = QJsonDocument.fromJson(json)
         root_object = document.object()
         kind = root_object["kind"]
-        assert(kind == "Listing")
+        assert kind == "Listing"
         data_object = root_object["data"]
         children_array = data_object["children"]
         if not children_array:

@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import copy
 from PySide6.QtSql import QSqlRelationalDelegate
@@ -13,7 +14,8 @@ class BookDelegate(QSqlRelationalDelegate):
 
     def __init__(self, parent=None):
         QSqlRelationalDelegate.__init__(self, parent)
-        self.star = QPixmap(":/images/star.png")
+        self.star = QPixmap(":/images/star.svg")
+        self.star_filled = QPixmap(":/images/star-filled.svg")
 
     def paint(self, painter, option, index):
         """ Paint the items in the table.
@@ -43,16 +45,18 @@ class BookDelegate(QSqlRelationalDelegate):
 
             if option.state & QStyle.State_Selected:
                 painter.fillRect(option.rect,
-                    option.palette.color(color_group, QPalette.Highlight))
-            rating = model.data(index, Qt.DisplayRole)
+                                 option.palette.color(color_group, QPalette.Highlight))
+            rating = model.data(index, Qt.ItemDataRole.DisplayRole)
             width = self.star.width()
             height = self.star.height()
             x = option.rect.x()
             y = option.rect.y() + (option.rect.height() / 2) - (height / 2)
-            for i in range(rating):
-                painter.drawPixmap(x, y, self.star)
+            for i in range(5):
+                if i < rating:
+                    painter.drawPixmap(x, y, self.star_filled)
+                else:
+                    painter.drawPixmap(x, y, self.star)
                 x += width
-
 
         pen = painter.pen()
         painter.setPen(option.palette.color(QPalette.Mid))

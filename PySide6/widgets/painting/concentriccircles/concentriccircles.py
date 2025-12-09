@@ -1,13 +1,15 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
-"""PySide6 port of the widgets/painting/concentriccircles example from Qt v5.x, originating from PyQt"""
+"""PySide6 port of the widgets/painting/concentriccircles example from Qt v5.x, originating
+   from PyQt"""
 
 from PySide6.QtCore import QRect, QRectF, QSize, Qt, QTimer
 from PySide6.QtGui import QColor, QPainter, QPalette, QPen
 from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QLabel,
-        QSizePolicy, QWidget)
+                               QSizePolicy, QWidget)
 
 
 class CircleWidget(QWidget):
@@ -18,8 +20,8 @@ class CircleWidget(QWidget):
         self.antialiased = False
         self._frame_no = 0
 
-        self.setBackgroundRole(QPalette.Base)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setBackgroundRole(QPalette.ColorRole.Base)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def set_float_based(self, floatBased):
         self._float_based = floatBased
@@ -41,7 +43,7 @@ class CircleWidget(QWidget):
 
     def paintEvent(self, event):
         with QPainter(self) as painter:
-            painter.setRenderHint(QPainter.Antialiasing, self.antialiased)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, self.antialiased)
             painter.translate(self.width() / 2, self.height() / 2)
 
             for diameter in range(0, 256, 9):
@@ -52,10 +54,10 @@ class CircleWidget(QWidget):
 
                     if self._float_based:
                         painter.drawEllipse(QRectF(-diameter / 2.0,
-                                -diameter / 2.0, diameter, diameter))
+                                                   -diameter / 2.0, diameter, diameter))
                     else:
                         painter.drawEllipse(QRect(-diameter / 2,
-                                -diameter / 2, diameter, diameter))
+                                                  -diameter / 2, diameter, diameter))
 
 
 class Window(QWidget):
@@ -92,9 +94,9 @@ class Window(QWidget):
 
     def create_label(self, text):
         label = QLabel(text)
-        label.setAlignment(Qt.AlignCenter)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label.setMargin(2)
-        label.setFrameStyle(QFrame.Box | QFrame.Sunken)
+        label.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Sunken)
         return label
 
 

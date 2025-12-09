@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from textwrap import dedent
 
@@ -83,7 +84,7 @@ class CharacterWidget(QWidget):
         QToolTip.showText(event.globalPosition().toPoint(), text, self)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._last_key = self._unicode_from_pos(event.position().toPoint())
             if self._last_key != -1:
                 c = chr(self._last_key)
@@ -98,14 +99,14 @@ class CharacterWidget(QWidget):
 
     def render(self, event, painter):
         painter = QPainter(self)
-        painter.fillRect(event.rect(), QBrush(Qt.white))
+        painter.fillRect(event.rect(), QBrush(Qt.GlobalColor.white))
         painter.setFont(self._display_font)
         redraw_rect = event.rect()
         begin_row = int(redraw_rect.top() / self._square_size)
         end_row = int(redraw_rect.bottom() / self._square_size)
         begin_column = int(redraw_rect.left() / self._square_size)
         end_column = int(redraw_rect.right() / self._square_size)
-        painter.setPen(QPen(Qt.gray))
+        painter.setPen(QPen(Qt.GlobalColor.gray))
         for row in range(begin_row, end_row + 1):
             for column in range(begin_column, end_column + 1):
                 x = int(column * self._square_size)
@@ -113,7 +114,7 @@ class CharacterWidget(QWidget):
                 painter.drawRect(x, y, self._square_size, self._square_size)
 
         font_metrics = QFontMetrics(self._display_font)
-        painter.setPen(QPen(Qt.black))
+        painter.setPen(QPen(Qt.GlobalColor.black))
         for row in range(begin_row, end_row + 1):
             for column in range(begin_column, end_column + 1):
                 key = int(row * COLUMNS + column)
@@ -124,10 +125,11 @@ class CharacterWidget(QWidget):
                 if key == self._last_key:
                     painter.fillRect(column * self._square_size + 1,
                                      row * self._square_size + 1,
-                                     self._square_size, self._square_size, QBrush(Qt.red))
+                                     self._square_size, self._square_size,
+                                     QBrush(Qt.GlobalColor.red))
 
                 text = chr(key)
-                painter.drawText(column * self._square_size + (self._square_size / 2) -
-                                 font_metrics.horizontalAdvance(text) / 2,
+                painter.drawText(column * self._square_size + (self._square_size / 2)
+                                 - font_metrics.horizontalAdvance(text) / 2,
                                  row * self._square_size + 4 + font_metrics.ascent(),
                                  text)

@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from textwrap import dedent
 
@@ -8,8 +9,7 @@ from OpenGL.GL import (GL_ARRAY_BUFFER, GL_BLEND, GL_DEPTH_TEST, GL_FLOAT,
                        GL_ONE, GL_SRC_ALPHA, GL_TRIANGLE_STRIP)
 from PySide6.QtCore import QSize, Slot
 from PySide6.QtGui import QOpenGLFunctions
-from PySide6.QtOpenGL import (QOpenGLShader, QOpenGLShaderProgram,
-                              QOpenGLVersionProfile)
+from PySide6.QtOpenGL import QOpenGLShader, QOpenGLShaderProgram
 from PySide6.QtQuick import QQuickWindow, QSGRendererInterface
 
 VERTEX_SHADER = dedent(
@@ -57,11 +57,13 @@ class SquircleRenderer(QOpenGLFunctions):
     def init(self):
         if not self._program:
             rif = self._window.rendererInterface()
-            assert (rif.graphicsApi() == QSGRendererInterface.OpenGL)
+            assert (rif.graphicsApi() == QSGRendererInterface.GraphicsApi.OpenGL)
             self.initializeOpenGLFunctions()
             self._program = QOpenGLShaderProgram()
-            self._program.addCacheableShaderFromSourceCode(QOpenGLShader.Vertex, VERTEX_SHADER)
-            self._program.addCacheableShaderFromSourceCode(QOpenGLShader.Fragment, FRAGMENT_SHADER)
+            self._program.addCacheableShaderFromSourceCode(QOpenGLShader.ShaderTypeBit.Vertex,
+                                                           VERTEX_SHADER)
+            self._program.addCacheableShaderFromSourceCode(QOpenGLShader.ShaderTypeBit.Fragment,
+                                                           FRAGMENT_SHADER)
             self._program.bindAttributeLocation("vertices", 0)
             self._program.link()
 

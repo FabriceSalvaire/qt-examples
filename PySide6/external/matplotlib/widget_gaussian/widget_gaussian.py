@@ -1,15 +1,15 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
 import numpy as np
 from scipy.stats import norm
-from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
-from PySide6.QtCore import Qt, Slot
+from matplotlib.backends.backend_qtagg import FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
+from PySide6.QtCore import Slot
 from PySide6.QtWidgets import (
     QApplication,
     QWidget,

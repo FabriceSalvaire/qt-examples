@@ -1,9 +1,10 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from tictactoe import TicTacToe
 
-from PySide6.QtCore import QObject, Slot
+from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout
 from PySide6.QtDesigner import (QExtensionFactory, QPyDesignerTaskMenuExtension)
@@ -15,12 +16,12 @@ class TicTacToeDialog(QDialog):
         layout = QVBoxLayout(self)
         self._ticTacToe = TicTacToe(self)
         layout.addWidget(self._ticTacToe)
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok
-                                      | QDialogButtonBox.Cancel
-                                      | QDialogButtonBox.Reset)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok
+                                      | QDialogButtonBox.StandardButton.Cancel
+                                      | QDialogButtonBox.StandardButton.Reset)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
-        reset_button = button_box.button(QDialogButtonBox.Reset)
+        reset_button = button_box.button(QDialogButtonBox.StandardButton.Reset)
         reset_button.clicked.connect(self._ticTacToe.clear_board)
         layout.addWidget(button_box)
 
@@ -48,7 +49,7 @@ class TicTacToeTaskMenu(QPyDesignerTaskMenuExtension):
     def _edit_state(self):
         dialog = TicTacToeDialog(self._ticTacToe)
         dialog.set_state(self._ticTacToe.state)
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             self._ticTacToe.state = dialog.state()
 
 

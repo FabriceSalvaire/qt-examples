@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/richtext/textobject example from Qt v5.x"""
 
@@ -16,7 +17,7 @@ from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QLineEdit,
 from PySide6.QtSvg import QSvgRenderer
 
 
-SVG_TEXT_FORMAT = QTextFormat.UserObject + 1
+SVG_TEXT_FORMAT = QTextFormat.ObjectTypes.UserObject + 1
 
 
 SVG_DATA = 1
@@ -55,7 +56,7 @@ class Window(QWidget):
         file_name = self._file_name_line_edit.text()
         file = QFile(file_name)
 
-        if not file.open(QIODevice.ReadOnly):
+        if not file.open(QIODevice.OpenModeFlag.ReadOnly):
             reason = file.errorString()
             message = f"Could not open '{file_name}': {reason}"
             QMessageBox.warning(self, "Error Opening File", message)

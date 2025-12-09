@@ -2,6 +2,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the itemviews/fetchmore/fetchmore example from Qt v6.x
 
@@ -36,7 +37,7 @@ class FileListModel(QAbstractListModel):
     def rowCount(self, parent=QModelIndex()):
         return self._file_count
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
             return None
 
@@ -44,15 +45,15 @@ class FileListModel(QAbstractListModel):
         if row >= len(self._file_list) or row < 0:
             return None
 
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return self._file_list[row].fileName()
 
-        if role == Qt.BackgroundRole:
+        if role == Qt.ItemDataRole.BackgroundRole:
             batch = row // BATCH_SIZE
-            palette = qApp.palette()
+            palette = qApp.palette()  # noqa: F821
             return palette.base() if batch % 2 == 0 else palette.alternateBase()
 
-        if role == Qt.DecorationRole:
+        if role == Qt.ItemDataRole.DecorationRole:
             return self._icon_provider.icon(self._file_list[row])
 
         return None
@@ -80,8 +81,8 @@ class FileListModel(QAbstractListModel):
         directory = QDir(path)
 
         self.beginResetModel()
-        directory_filter = QDir.AllEntries | QDir.NoDot
-        self._file_list = directory.entryInfoList(directory_filter, QDir.Name)
+        directory_filter = QDir.Filter.AllEntries | QDir.Filter.NoDot
+        self._file_list = directory.entryInfoList(directory_filter, QDir.SortFlag.Name)
         self._file_count = 0
         self.endResetModel()
 
@@ -100,8 +101,8 @@ class Window(QWidget):
         self._view.setModel(self._model)
 
         self._log_viewer = QPlainTextEdit()
-        self._log_viewer.setSizePolicy(QSizePolicy(QSizePolicy.Preferred,
-                                       QSizePolicy.Preferred))
+        self._log_viewer.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred,
+                                       QSizePolicy.Policy.Preferred))
 
         self._model.number_populated.connect(self.update_log)
         self._view.activated.connect(self.activated)
@@ -112,7 +113,7 @@ class Window(QWidget):
 
         self.setWindowTitle("Fetch More Example")
 
-    @Slot(str,int,int,int)
+    @Slot(str, int, int, int)
     def update_log(self, path, start, number, total):
         native_path = QDir.toNativeSeparators(path)
         last = start + number - 1

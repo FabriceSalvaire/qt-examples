@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 from pathlib import Path
@@ -20,8 +21,8 @@ class MainWindow(QMainWindow):
 
         self.view = QTreeView()
         self.view.setAlternatingRowColors(True)
-        self.view.setSelectionBehavior(QAbstractItemView.SelectItems)
-        self.view.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectItems)
+        self.view.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.view.setAnimated(False)
         self.view.setAllColumnsShowFocus(True)
         self.setCentralWidget(self.view)
@@ -52,7 +53,7 @@ class MainWindow(QMainWindow):
         self.insert_child_action.setShortcut("Ctrl+N")
         self.insert_child_action.triggered.connect(self.insert_child)
         help_menu = menubar.addMenu("&Help")
-        about_qt_action = help_menu.addAction("About Qt", qApp.aboutQt)
+        about_qt_action = help_menu.addAction("About Qt", qApp.aboutQt)  # noqa: F821
         about_qt_action.setShortcut("F1")
 
         self.setWindowTitle("Editable Tree Model")
@@ -90,13 +91,13 @@ class MainWindow(QMainWindow):
 
         for column in range(model.columnCount(index)):
             child: QModelIndex = model.index(0, column, index)
-            model.setData(child, "[No data]", Qt.EditRole)
-            if not model.headerData(column, Qt.Horizontal):
-                model.setHeaderData(column, Qt.Horizontal, "[No header]",
-                                    Qt.EditRole)
+            model.setData(child, "[No data]", Qt.ItemDataRole.EditRole)
+            if not model.headerData(column, Qt.Orientation.Horizontal):
+                model.setHeaderData(column, Qt.Orientation.Horizontal, "[No header]",
+                                    Qt.ItemDataRole.EditRole)
 
         selection_model.setCurrentIndex(
-            model.index(0, 0, index), QItemSelectionModel.ClearAndSelect
+            model.index(0, 0, index), QItemSelectionModel.SelectionFlag.ClearAndSelect
         )
         self.update_actions()
 
@@ -107,8 +108,8 @@ class MainWindow(QMainWindow):
 
         changed: bool = model.insertColumn(column + 1)
         if changed:
-            model.setHeaderData(column + 1, Qt.Horizontal, "[No header]",
-                                Qt.EditRole)
+            model.setHeaderData(column + 1, Qt.Orientation.Horizontal, "[No header]",
+                                Qt.ItemDataRole.EditRole)
 
         self.update_actions()
 
@@ -125,7 +126,7 @@ class MainWindow(QMainWindow):
 
         for column in range(model.columnCount(parent)):
             child: QModelIndex = model.index(index.row() + 1, column, parent)
-            model.setData(child, "[No data]", Qt.EditRole)
+            model.setData(child, "[No data]", Qt.ItemDataRole.EditRole)
 
     @Slot()
     def remove_column(self) -> None:

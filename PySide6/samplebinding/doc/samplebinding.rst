@@ -48,14 +48,14 @@ placed in separate ``.cpp`` files named after each C++ type. The code is
 then compiled and linked into a shared library. The shared library is a
 CPython extension module, which is loaded by the Python interpreter.
 
-Beacuse the C++ language has different semantics to Python, shiboken
+Because the C++ language has different semantics to Python, shiboken
 needs help in figuring out how to generate the bindings code. This is
 done by specifying a special XML file called a typesystem file.
 
 In the typesystem file you specify things like:
 
- * which C++ classes should have bindings (Icecream) and what kind of
-   semantics (value / object)
+ * Which C++ classes should have bindings (Icecream, Truck) and with what
+   kind of semantics (value / object)
 
  * Ownership rules (who deletes the C++ objects, C++ or Python)
 
@@ -156,8 +156,9 @@ For Windows you will also need:
   configuration is the same (all Release, which is more likely,
   or all Debug).
 
-The build uses the ``pyside_config.py`` file to configure the project
-using the current PySide/Shiboken installation.
+The build uses the ``Shiboken6``, ``Shiboken6Tools``, and ``PySide6``
+CMake packages to configure the project with the current PySide/Shiboken
+installation.
 
 Using CMake
 ===========
@@ -165,32 +166,50 @@ Using CMake
 You can build and run this example by executing the following commands
 (slightly adapted to your file system layout) in a terminal:
 
-macOS/Linux:
+Run CMake on macOS/Linux:
 
 .. code-block:: bash
 
     cd ~/pyside-setup/examples/samplebinding
+    mkdir build
+    cd build
+    cmake .. -B. -G Ninja -DCMAKE_BUILD_TYPE=Release
 
-On Windows:
+Run CMake on Windows:
 
 .. code-block:: bash
 
     cd C:\pyside-setup\examples\samplebinding
+    mkdir build
+    cd build
+    cmake .. -B. -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl.exe
+
+To build:
 
 .. code-block:: bash
 
-    mkdir build
-    cd build
-    cmake -H.. -B. -G Ninja -DCMAKE_BUILD_TYPE=Release
     ninja
     ninja install
     cd ..
+
+Use the Python module
++++++++++++++++++++++
 
 The final example can then be run by:
 
 .. code-block:: bash
 
     python main.py
+
+In the ``main.py`` script, two types are derived from :code:`Icecream` for
+different “flavors” after importing the classes from the :code:`Universe`
+module. Then, a :code:`truck` is created to deliver some regular flavored
+Icecreams and two special ones.
+
+If the delivery fails, a new :code:`truck` is created with the old flavors
+copied over, and a new *magical* flavor that will surely satisfy all customers.
+
+Try running it to see if the ice creams are delivered.
 
 Windows troubleshooting
 +++++++++++++++++++++++
@@ -207,13 +226,13 @@ passing the compiler on the command line:
 
 .. code-block:: bash
 
-    cmake -H.. -B. -DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe
+    cmake -S.. -B. -DCMAKE_C_COMPILER=cl.exe -DCMAKE_CXX_COMPILER=cl.exe
 
 or by using the -G option:
 
 .. code-block:: bash
 
-    cmake -H.. -B. -G "Visual Studio 14 Win64"
+    cmake -S.. -B. -G "Visual Studio 14 Win64"
 
 If the ``-G "Visual Studio 14 Win64"`` option is used, a ``sln`` file
 will be generated, and can be used with ``MSBuild``

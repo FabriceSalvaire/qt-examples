@@ -1,6 +1,7 @@
 # Copyright (C) 2010 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from enum import IntEnum
 import sys
@@ -21,9 +22,21 @@ class PathType(IntEnum):
     CIRCLE_PATH = 1
 
 
+def createEasingCurve(curveType):
+    curve = QEasingCurve(curveType)
+    if curveType == QEasingCurve.Type.BezierSpline:
+        curve.addCubicBezierSegment(QPointF(0.4, 0.1), QPointF(0.6, 0.9), QPointF(1.0, 1.0))
+    elif curveType == QEasingCurve.Type.TCBSpline:
+        curve.addTCBSegment(QPointF(0.0, 0.0), 0, 0, 0)
+        curve.addTCBSegment(QPointF(0.3, 0.4), 0.2, 1, -0.2)
+        curve.addTCBSegment(QPointF(0.7, 0.6), -0.2, 1, 0.2)
+        curve.addTCBSegment(QPointF(1.0, 1.0), 0, 0, 0)
+    return curve
+
+
 class Animation(QPropertyAnimation):
-    def __init__(self, target, prop):
-        super().__init__(target, prop)
+    def __init__(self, target, prop, parent=None):
+        super().__init__(target, prop, parent)
         self.set_path_type(PathType.LINEAR_PATH)
 
     def set_path_type(self, pathType):
@@ -64,7 +77,7 @@ class Pixmap(QObject):
         super().__init__()
 
         self.pixmap_item = QGraphicsPixmapItem(pix)
-        self.pixmap_item.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+        self.pixmap_item.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
     def set_pos(self, pos):
         self.pixmap_item.setPos(pos)
@@ -108,8 +121,8 @@ class Window(QWidget):
         self._scene.addItem(self._item.pixmap_item)
         self._ui.graphicsView.setScene(self._scene)
 
-        self._anim = Animation(self._item, b'pos')
-        self._anim.setEasingCurve(QEasingCurve.OutBounce)
+        self._anim = Animation(self._item, b'pos', self)
+        self._anim.setEasingCurve(QEasingCurve.Type.OutBounce)
         self._ui.easingCurvePicker.setCurrentRow(0)
 
         self.start_animation()
@@ -123,14 +136,15 @@ class Window(QWidget):
 
         brush = QBrush(gradient)
 
-        curve_types = [(f"QEasingCurve.{e.name}", e) for e in QEasingCurve.Type if e.value <= 40]
-
+        curve_count = QEasingCurve.Type.Custom.value
+        curve_types = [(f"QEasingCurve.{e.name}", e)
+                       for e in QEasingCurve.Type if e.value < curve_count]
 
         with QPainter(pix) as painter:
 
             for curve_name, curve_type in curve_types:
                 painter.fillRect(QRect(QPoint(0, 0), self._iconSize), brush)
-                curve = QEasingCurve(curve_type)
+                curve = createEasingCurve(curve_type)
 
                 painter.setPen(QColor(0, 0, 255, 64))
                 x_axis = self._iconSize.height() / 1.5
@@ -140,18 +154,17 @@ class Window(QWidget):
 
                 curve_scale = self._iconSize.height() / 2.0
 
-                painter.setPen(Qt.NoPen)
+                painter.setPen(Qt.PenStyle.NoPen)
 
                 # Start point.
-                painter.setBrush(Qt.red)
-                start = QPoint(y_axis,
-                        x_axis - curve_scale * curve.valueForProgress(0))
+                painter.setBrush(Qt.GlobalColor.red)
+                start = QPoint(y_axis, x_axis - curve_scale * curve.valueForProgress(0))
                 painter.drawRect(start.x() - 1, start.y() - 1, 3, 3)
 
                 # End point.
-                painter.setBrush(Qt.blue)
+                painter.setBrush(Qt.GlobalColor.blue)
                 end = QPoint(y_axis + curve_scale,
-                        x_axis - curve_scale * curve.valueForProgress(1))
+                             x_axis - curve_scale * curve.valueForProgress(1))
                 painter.drawRect(end.x() - 1, end.y() - 1, 3, 3)
 
                 curve_path = QPainterPath()
@@ -159,13 +172,13 @@ class Window(QWidget):
                 t = 0.0
                 while t <= 1.0:
                     to = QPointF(y_axis + curve_scale * t,
-                            x_axis - curve_scale * curve.valueForProgress(t))
+                                 x_axis - curve_scale * curve.valueForProgress(t))
                     curve_path.lineTo(to)
                     t += 1.0 / curve_scale
 
-                painter.setRenderHint(QPainter.Antialiasing, True)
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
                 painter.strokePath(curve_path, QColor(32, 32, 32))
-                painter.setRenderHint(QPainter.Antialiasing, False)
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing, False)
 
                 item = QListWidgetItem()
                 item.setIcon(QIcon(pix))
@@ -181,18 +194,19 @@ class Window(QWidget):
 
     def curve_changed(self, row):
         curve_type = QEasingCurve.Type(row)
-        self._anim.setEasingCurve(curve_type)
+        self._anim.setEasingCurve(createEasingCurve(curve_type))
         self._anim.setCurrentTime(0)
 
-        is_elastic = (curve_type.value >= QEasingCurve.InElastic.value
-                    and curve_type.value <= QEasingCurve.OutInElastic.value)
-        is_bounce = (curve_type.value >= QEasingCurve.InBounce.value
-                    and curve_type.value <= QEasingCurve.OutInBounce.value)
+        is_elastic = (curve_type.value >= QEasingCurve.Type.InElastic.value
+                      and curve_type.value <= QEasingCurve.Type.OutInElastic.value)
+        is_bounce = (curve_type.value >= QEasingCurve.Type.InBounce.value
+                     and curve_type.value <= QEasingCurve.Type.OutInBounce.value)
 
         self._ui.periodSpinBox.setEnabled(is_elastic)
         self._ui.amplitudeSpinBox.setEnabled(is_elastic or is_bounce)
-        self._ui.overshootSpinBox.setEnabled(curve_type.value >= QEasingCurve.InBack.value
-                                          and curve_type.value <= QEasingCurve.OutInBack.value)
+        overshoot = (curve_type.value >= QEasingCurve.Type.InBack.value
+                     and curve_type.value <= QEasingCurve.Type.OutInBack.value)
+        self._ui.overshootSpinBox.setEnabled(overshoot)
 
     def path_changed(self, index):
         self._anim.set_path_type(index)

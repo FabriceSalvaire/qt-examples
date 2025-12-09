@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """
 PySide6 port of Qt6 example examples/multimedia/audiosources
@@ -12,27 +13,20 @@ Note: This Python example is not fully complete as compared to its C++ counterpa
 Only the push mode works at the moment. For the pull mode to work, the class
 QIODevice have python bindings that needs to be fixed.
 """
+import os
 import sys
-from typing import Optional
 
 import PySide6
-from PySide6.QtCore import QByteArray, QIODevice, QMargins, QRect, Qt, Signal, Slot
+from PySide6.QtCore import QByteArray, QMargins, Qt, Slot, qWarning
 from PySide6.QtGui import QPainter, QPalette
-from PySide6.QtMultimedia import (
-    QAudio,
-    QAudioDevice,
-    QAudioFormat,
-    QAudioSource,
-    QMediaDevices,
-)
-from PySide6.QtWidgets import (
-    QApplication,
-    QComboBox,
-    QPushButton,
-    QSlider,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtMultimedia import QAudioDevice, QAudioFormat, QAudioSource, QMediaDevices, QtAudio
+from PySide6.QtWidgets import (QApplication, QComboBox, QPushButton, QSlider, QVBoxLayout,
+                               QWidget, QLabel)
+
+is_android = os.environ.get('ANDROID_ARGUMENT')
+
+if is_android or sys.platform == "darwin":
+    from PySide6.QtCore import QMicrophonePermission
 
 
 class AudioInfo:
@@ -62,10 +56,10 @@ class AudioInfo:
 
 
 class RenderArea(QWidget):
-    def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None) -> None:
+    def __init__(self, parent: PySide6.QtWidgets.QWidget | None = None) -> None:
         super().__init__(parent=parent)
         self.m_level = 0
-        self.setBackgroundRole(QPalette.Base)
+        self.setBackgroundRole(QPalette.ColorRole.Base)
         self.setAutoFillBackground(True)
         self.setMinimumHeight(30)
         self.setMinimumWidth(200)
@@ -76,7 +70,7 @@ class RenderArea(QWidget):
 
     def paintEvent(self, event: PySide6.QtGui.QPaintEvent) -> None:
         with QPainter(self) as painter:
-            painter.setPen(Qt.black)
+            painter.setPen(Qt.GlobalColor.black)
             frame = painter.viewport() - QMargins(10, 10, 10, 10)
 
             painter.drawRect(frame)
@@ -85,9 +79,8 @@ class RenderArea(QWidget):
                 return
 
             pos: int = round((frame.width() - 1) * self.m_level)
-            painter.fillRect(
-                frame.left() + 1, frame.top() + 1, pos, frame.height() - 1, Qt.red
-            )
+            painter.fillRect(frame.left() + 1, frame.top() + 1, pos, frame.height() - 1,
+                             Qt.GlobalColor.red)
 
 
 class InputTest(QWidget):
@@ -95,6 +88,28 @@ class InputTest(QWidget):
         super().__init__()
         self.m_devices = QMediaDevices(self)
         self.m_pullMode = False
+        self.initialize()
+
+    @Slot()
+    def initialize(self):
+        if is_android or sys.platform == "darwin":
+            is_nuitka = "__compiled__" in globals()
+            if not is_nuitka and sys.platform == "darwin":
+                print("This example does not work on macOS when Python is run in interpreted mode."
+                      "For this example to work on macOS, package the example using pyside6-deploy"
+                      "For more information, read `Notes for Developer` in the documentation")
+                sys.exit(0)
+            permission = QMicrophonePermission()
+            permission_status = qApp.checkPermission(permission)  # noqa: F821
+            if permission_status == Qt.PermissionStatus.Undetermined:
+                qApp.requestPermission(permission, self, self.initialize)  # noqa: F821
+                return
+            if permission_status == Qt.PermissionStatus.Denied:
+                qWarning("Microphone permission is not granted!")
+                self.initializeErrorWindow()
+                return
+            elif permission_status == Qt.PermissionStatus.Granted:
+                print("[AudioSource] Microphone permission granted")
 
         self.initialize_window()
         self.initialize_audio(QMediaDevices.defaultAudioInput())
@@ -118,7 +133,7 @@ class InputTest(QWidget):
         self.m_device_box.activated[int].connect(self.device_changed)
         self.layout.addWidget(self.m_device_box)
 
-        self.m_volume_slider = QSlider(Qt.Horizontal, self)
+        self.m_volume_slider = QSlider(Qt.Orientation.Horizontal, self)
         self.m_volume_slider.setRange(0, 100)
         self.m_volume_slider.setValue(100)
         self.m_volume_slider.valueChanged.connect(self.slider_changed)
@@ -132,19 +147,26 @@ class InputTest(QWidget):
         self.m_suspend_resume_button.clicked.connect(self.toggle_suspend)
         self.layout.addWidget(self.m_suspend_resume_button)
 
+    def initializeErrorWindow(self):
+        self.layout = QVBoxLayout(self)
+        error_label = QLabel(self.tr("Microphone permission is not granted!"))
+        error_label.setWordWrap(True)
+        error_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.layout.addWidget(error_label)
+
     def initialize_audio(self, device_info: QAudioDevice):
         format = QAudioFormat()
         format.setSampleRate(8000)
         format.setChannelCount(1)
-        format.setSampleFormat(QAudioFormat.Int16)
+        format.setSampleFormat(QAudioFormat.SampleFormat.Int16)
 
         self.m_audio_info = AudioInfo(format)
 
         self.m_audio_input = QAudioSource(device_info, format)
-        initial_volume = QAudio.convertVolume(
+        initial_volume = QtAudio.convertVolume(
             self.m_audio_input.volume(),
-            QAudio.LinearVolumeScale,
-            QAudio.LogarithmicVolumeScale,
+            QtAudio.VolumeScale.LinearVolumeScale,
+            QtAudio.VolumeScale.LogarithmicVolumeScale,
         )
         self.m_volume_slider.setValue(int(round(initial_volume * 100)))
         self.toggle_mode()
@@ -173,10 +195,10 @@ class InputTest(QWidget):
     def toggle_suspend(self):
         # toggle suspend/resume
         state = self.m_audio_input.state()
-        if (state == QAudio.SuspendedState) or (state == QAudio.StoppedState):
+        if (state == QtAudio.State.SuspendedState) or (state == QtAudio.State.StoppedState):
             self.m_audio_input.resume()
             self.m_suspend_resume_button.setText("Suspend recording")
-        elif state == QAudio.ActiveState:
+        elif state == QtAudio.State.ActiveState:
             self.m_audio_input.suspend()
             self.m_suspend_resume_button.setText("Resume recording")
         # else no-op
@@ -189,10 +211,9 @@ class InputTest(QWidget):
 
     @Slot(int)
     def slider_changed(self, value):
-        linearVolume = QAudio.convertVolume(
-            value / float(100), QAudio.LogarithmicVolumeScale, QAudio.LinearVolumeScale
-        )
-
+        linearVolume = QtAudio.convertVolume(value / float(100),
+                                             QtAudio.VolumeScale.LogarithmicVolumeScale,
+                                             QtAudio.VolumeScale.LinearVolumeScale)
         self.m_audio_input.setVolume(linearVolume)
 
 

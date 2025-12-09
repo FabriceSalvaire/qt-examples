@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 # PySide6 tutorial 5
 
@@ -17,15 +18,15 @@ class MyWidget(QWidget):
         super().__init__(parent)
 
         quit = QPushButton("Quit")
-        quit.setFont(QFont("Times", 18, QFont.Bold))
+        quit.setFont(QFont("Times", 18, QFont.Weight.Bold))
 
         lcd = QLCDNumber(2)
 
-        slider = QSlider(Qt.Horizontal)
+        slider = QSlider(Qt.Orientation.Horizontal)
         slider.setRange(0, 99)
         slider.setValue(0)
 
-        quit.clicked.connect(qApp.quit)
+        quit.clicked.connect(qApp.quit)  # noqa: F821
         slider.valueChanged.connect(lcd.display)
 
         layout = QVBoxLayout(self)

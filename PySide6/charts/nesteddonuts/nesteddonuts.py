@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the Nested Donuts example from Qt v5.x"""
 
@@ -21,7 +22,7 @@ class Widget(QWidget):
         self.setMinimumSize(800, 600)
         self.donuts = []
         self.chart_view = QChartView()
-        self.chart_view.setRenderHint(QPainter.Antialiasing)
+        self.chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.chart = self.chart_view.chart()
         self.chart.legend().setVisible(False)
         self.chart.setTitle("Nested donuts demo")

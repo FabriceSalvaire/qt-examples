@@ -21,10 +21,7 @@ extern "C" PyObject *PyInit_AppLib();
 static const char moduleName[] = "AppLib";
 
 // This variable stores all Python types exported by this module.
-extern PyTypeObject **SbkAppLibTypes;
-
-// This variable stores all type converters exported by this module.
-extern SbkConverter **SbkAppLibTypeConverters;
+extern Shiboken::Module::TypeInitStruct *SbkAppLibTypeStructs;
 
 namespace PythonUtils {
 
@@ -69,9 +66,10 @@ State init()
     Py_Initialize();
     qAddPostRoutine(cleanup);
     state = PythonInitialized;
-    const bool pythonInitialized = PyInit_AppLib() != nullptr;
+    auto *appLibModule = PyImport_ImportModule("AppLib");
     const bool pyErrorOccurred = PyErr_Occurred() != nullptr;
-    if (pythonInitialized && !pyErrorOccurred) {
+    if (appLibModule != nullptr && !pyErrorOccurred) {
+        Py_DECREF(appLibModule);
         state = AppModuleLoaded;
     } else {
         if (pyErrorOccurred)
@@ -86,7 +84,7 @@ bool bindAppObject(const QString &moduleName, const QString &name,
 {
     if (init() != AppModuleLoaded)
         return false;
-    PyTypeObject *typeObject = SbkAppLibTypes[index];
+    PyTypeObject *typeObject = SbkAppLibTypeStructs[index].type;
 
     PyObject *po = Shiboken::Conversions::pointerToPython(typeObject, o);
     if (!po) {
@@ -114,20 +112,14 @@ bool bindAppObject(const QString &moduleName, const QString &name,
     return true;
 }
 
-bool runScript(const QStringList &script)
+bool runScript(const QString &script)
 {
     if (init() == PythonUninitialized)
         return false;
 
-    // Concatenating all the lines
-    QString content;
-    QTextStream ss(&content);
-    for (const QString &line: script)
-        ss << line << "\n";
-
     // Executing the whole script as one line
     bool result = true;
-    const QByteArray line = content.toUtf8();
+    const QByteArray line = script.toUtf8();
     if (PyRun_SimpleString(line.constData()) == -1) {
         if (PyErr_Occurred())
             PyErr_Print();

@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 WebEngineWidgets Notifications Example"""
 
@@ -37,10 +38,11 @@ if __name__ == '__main__':
     view.setPage(WebEnginePage(view))
 
     def set_feature_permission(origin: QUrl, feature: QWebEnginePage.Feature):
-        if feature != QWebEnginePage.Notifications:
+        if feature != QWebEnginePage.Feature.Notifications:
             return
 
-        view.page().setFeaturePermission(origin, feature, QWebEnginePage.PermissionGrantedByUser)
+        view.page().setFeaturePermission(origin, feature,
+                                         QWebEnginePage.PermissionPolicy.PermissionGrantedByUser)
 
     view.page().featurePermissionRequested.connect(set_feature_permission)
     profile = view.page().profile()

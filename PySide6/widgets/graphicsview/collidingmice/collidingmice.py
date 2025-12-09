@@ -1,18 +1,16 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import math
 import sys
 
-from PySide6.QtCore import (QLineF, QPointF, QRandomGenerator, QRectF, QTimer,
-                            Qt)
-from PySide6.QtGui import (QBrush, QColor, QPainter, QPainterPath, QPixmap,
-                           QPolygonF, QTransform)
-from PySide6.QtWidgets import (QApplication, QGraphicsItem, QGraphicsScene,
-                               QGraphicsView)
+from PySide6.QtCore import (QLineF, QPointF, QRandomGenerator, QRectF, QTimer, Qt)
+from PySide6.QtGui import (QBrush, QColor, QPainter, QPainterPath, QPixmap, QPolygonF, QTransform)
+from PySide6.QtWidgets import (QApplication, QGraphicsItem, QGraphicsScene, QGraphicsView)
 
-import mice_rc
+import mice_rc  # noqa: F401
 
 
 def random(boundary):
@@ -26,7 +24,7 @@ class Mouse(QGraphicsItem):
     # Create the bounding rectangle once.
     adjust = 0.5
     BOUNDING_RECT = QRectF(-20 - adjust, -22 - adjust, 40 + adjust,
-            83 + adjust)
+                           83 + adjust)
 
     def __init__(self):
         super().__init__()
@@ -60,12 +58,12 @@ class Mouse(QGraphicsItem):
         painter.drawEllipse(-10, -20, 20, 40)
 
         # Eyes.
-        painter.setBrush(Qt.white)
+        painter.setBrush(Qt.GlobalColor.white)
         painter.drawEllipse(-10, -17, 8, 8)
         painter.drawEllipse(2, -17, 8, 8)
 
         # Nose.
-        painter.setBrush(Qt.black)
+        painter.setBrush(Qt.GlobalColor.black)
         painter.drawEllipse(QRectF(-2, -22, 4, 4))
 
         # Pupils.
@@ -74,9 +72,9 @@ class Mouse(QGraphicsItem):
 
         # Ears.
         if self.scene().collidingItems(self):
-            painter.setBrush(Qt.red)
+            painter.setBrush(Qt.GlobalColor.red)
         else:
-            painter.setBrush(Qt.darkYellow)
+            painter.setBrush(Qt.GlobalColor.darkYellow)
 
         painter.drawEllipse(-17, -12, 16, 16)
         painter.drawEllipse(1, -12, 16, 16)
@@ -86,7 +84,7 @@ class Mouse(QGraphicsItem):
         path.cubicTo(-5, 22, -5, 22, 0, 25)
         path.cubicTo(5, 27, 5, 32, 0, 30)
         path.cubicTo(-5, 32, -5, 42, 0, 35)
-        painter.setBrush(Qt.NoBrush)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawPath(path)
 
     def advance(self, phase):
@@ -103,7 +101,8 @@ class Mouse(QGraphicsItem):
             if angle_to_center < Mouse.PI and angle_to_center > Mouse.PI / 4:
                 # Rotate left.
                 self.angle += [-0.25, 0.25][self.angle < -Mouse.PI / 2]
-            elif angle_to_center >= Mouse.PI and angle_to_center < (Mouse.PI + Mouse.PI / 2 + Mouse.PI / 4):
+            elif (angle_to_center >= Mouse.PI
+                    and angle_to_center < (Mouse.PI + Mouse.PI / 2 + Mouse.PI / 4)):
                 # Rotate right.
                 self.angle += [-0.25, 0.25][self.angle < Mouse.PI / 2]
         elif math.sin(self.angle) < 0:
@@ -156,7 +155,7 @@ if __name__ == '__main__':
 
     scene = QGraphicsScene()
     scene.setSceneRect(-300, -300, 600, 600)
-    scene.setItemIndexMethod(QGraphicsScene.NoIndex)
+    scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex)
 
     for i in range(MOUSE_COUNT):
         mouse = Mouse()
@@ -165,11 +164,11 @@ if __name__ == '__main__':
         scene.addItem(mouse)
 
     view = QGraphicsView(scene)
-    view.setRenderHint(QPainter.Antialiasing)
+    view.setRenderHint(QPainter.RenderHint.Antialiasing)
     view.setBackgroundBrush(QBrush(QPixmap(':/images/cheese.jpg')))
-    view.setCacheMode(QGraphicsView.CacheBackground)
-    view.setViewportUpdateMode(QGraphicsView.BoundingRectViewportUpdate)
-    view.setDragMode(QGraphicsView.ScrollHandDrag)
+    view.setCacheMode(QGraphicsView.CacheModeFlag.CacheBackground)
+    view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
+    view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
     view.setWindowTitle("Colliding Mice")
     view.resize(400, 300)
     view.show()

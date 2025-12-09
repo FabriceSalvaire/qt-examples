@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the Legend example from Qt v5.x"""
 
@@ -7,7 +8,8 @@ import sys
 from PySide6.QtCore import Qt, QRectF, Slot
 from PySide6.QtGui import QBrush, QColor, QPainter, QPen
 from PySide6.QtWidgets import (QApplication, QDoubleSpinBox,
-    QFormLayout, QGridLayout, QGroupBox, QPushButton, QWidget)
+                               QFormLayout, QGridLayout, QGroupBox,
+                               QPushButton, QWidget)
 from PySide6.QtCharts import QBarSeries, QBarSet, QChart, QChartView
 
 
@@ -98,7 +100,7 @@ class MainWidget(QWidget):
         self.chart.legend().setVisible(True)
         self.chart.legend().setAlignment(Qt.AlignBottom)
 
-        self.chart_view.setRenderHint(QPainter.Antialiasing)
+        self.chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
     def show_legend_spinbox(self):
         self.legend_settings.setVisible(True)
@@ -206,10 +208,8 @@ class MainWidget(QWidget):
     def update_legend_layout(self):
         legend = self.chart.legend()
 
-        rect = QRectF(self.legend_posx.value(),
-            self.legend_posy.value(),
-            self.legend_width.value(),
-            self.legend_height.value())
+        rect = QRectF(self.legend_posx.value(), self.legend_posy.value(),
+                      self.legend_width.value(), self.legend_height.value())
         legend.setGeometry(rect)
 
         legend.update()

@@ -1,6 +1,7 @@
 # Copyright (C) 2011 Arun Srinivasan  <rulfzid@gmail.com>
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import (Qt, Signal)
 from PySide6.QtWidgets import (QWidget, QLabel, QPushButton, QVBoxLayout)
@@ -25,7 +26,7 @@ class NewAddressTab(QWidget):
 
         layout = QVBoxLayout()
         layout.addWidget(description_label)
-        layout.addWidget(add_button, 0, Qt.AlignCenter)
+        layout.addWidget(add_button, 0, Qt.AlignmentFlag.AlignCenter)
 
         self.setLayout(layout)
 

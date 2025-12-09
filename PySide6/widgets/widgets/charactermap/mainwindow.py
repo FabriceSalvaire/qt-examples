@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import Qt, QSignalBlocker, Slot
 from PySide6.QtGui import QGuiApplication, QClipboard, QFont, QFontDatabase
@@ -30,16 +31,16 @@ class MainWindow(QMainWindow):
         file_menu.addAction("Quit", self.close)
         help_menu = self.menuBar().addMenu("Help")
         help_menu.addAction("Show Font Info", self.show_info)
-        help_menu.addAction("About &Qt", qApp.aboutQt)
+        help_menu.addAction("About &Qt", qApp.aboutQt)  # noqa: F821
 
         central_widget = QWidget()
 
         self._filter_label = QLabel("Filter:")
         self._filter_combo = QComboBox()
-        self._filter_combo.addItem("All", int(QFontComboBox.AllFonts.value))
-        self._filter_combo.addItem("Scalable", int(QFontComboBox.ScalableFonts.value))
-        self._filter_combo.addItem("Monospaced", int(QFontComboBox.MonospacedFonts.value))
-        self._filter_combo.addItem("Proportional", int(QFontComboBox.ProportionalFonts.value))
+        self._filter_combo.addItem("All", QFontComboBox.FontFilter.AllFonts)
+        self._filter_combo.addItem("Scalable", QFontComboBox.FontFilter.ScalableFonts)
+        self._filter_combo.addItem("Monospaced", QFontComboBox.FontFilter.MonospacedFonts)
+        self._filter_combo.addItem("Proportional", QFontComboBox.FontFilter.ProportionalFonts)
         self._filter_combo.setCurrentIndex(0)
         self._filter_combo.currentIndexChanged.connect(self.filter_changed)
 
@@ -116,7 +117,7 @@ class MainWindow(QMainWindow):
 
     @Slot(int)
     def filter_changed(self, f):
-        filter = QFontComboBox.FontFilter(self._filter_combo.itemData(f))
+        filter = self._filter_combo.itemData(f)
         self._font_combo.setFontFilters(filter)
         count = self._font_combo.count()
         self.statusBar().showMessage(f"{count} font(s) found")
@@ -162,6 +163,6 @@ class MainWindow(QMainWindow):
         screen_geometry = self.screen().geometry()
         dialog = FontInfoDialog(self)
         dialog.setWindowTitle("Fonts")
-        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         dialog.resize(screen_geometry.width() / 4, screen_geometry.height() / 4)
         dialog.show()

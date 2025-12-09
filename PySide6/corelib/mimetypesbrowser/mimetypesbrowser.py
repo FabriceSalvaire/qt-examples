@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the corelib/mimetypes/mimetypebrowser example from from Qt"""
 
@@ -7,10 +8,15 @@ import argparse
 import sys
 
 from mainwindow import MainWindow
+from PySide6.QtCore import QLibraryInfo, QLocale, QTranslator
 from PySide6.QtWidgets import QApplication
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    translator = QTranslator(app)
+    if translator.load(QLocale.system(), "qtbase", "_",
+                       QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
+        app.installTranslator(translator)
 
     parser = argparse.ArgumentParser(description="MimeTypesBrowser Example")
     parser.add_argument("-v", "--version", action="version", version="%(prog)s 1.0")

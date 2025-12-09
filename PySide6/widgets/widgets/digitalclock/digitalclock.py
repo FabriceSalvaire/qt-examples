@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 import sys
 
 from PySide6.QtCore import QTime, QTimer, Slot
@@ -9,7 +10,7 @@ from PySide6.QtWidgets import QApplication, QLCDNumber
 class DigitalClock(QLCDNumber):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setSegmentStyle(QLCDNumber.Filled)
+        self.setSegmentStyle(QLCDNumber.SegmentStyle.Filled)
         self.setDigitCount(8)
 
         self.timer = QTimer(self)

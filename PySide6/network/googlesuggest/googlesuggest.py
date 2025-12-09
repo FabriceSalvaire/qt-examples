@@ -1,14 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-
-from typing import List
+from __future__ import annotations
 
 from PySide6.QtCore import (QByteArray, QEvent, QObject, QPoint, Qt, QTimer,
                             QXmlStreamReader, Slot)
 from PySide6.QtGui import QPalette
 from PySide6.QtNetwork import (QNetworkAccessManager, QNetworkReply,
                                QNetworkRequest)
-from PySide6.QtWidgets import QFrame, QTreeWidget, QTreeWidgetItem
+from PySide6.QtWidgets import QAbstractItemView, QFrame, QTreeWidget, QTreeWidgetItem
 
 
 class GSuggestCompletion(QObject):
@@ -16,18 +15,18 @@ class GSuggestCompletion(QObject):
         super().__init__(parent)
         self.editor = parent
         self.popup = QTreeWidget()
-        self.popup.setWindowFlags(Qt.Popup)
-        self.popup.setFocusPolicy(Qt.NoFocus)
+        self.popup.setWindowFlags(Qt.WindowType.Popup)
+        self.popup.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.popup.setFocusProxy(parent)
         self.popup.setMouseTracking(True)
 
         self.popup.setColumnCount(1)
         self.popup.setUniformRowHeights(True)
         self.popup.setRootIsDecorated(False)
-        self.popup.setEditTriggers(QTreeWidget.NoEditTriggers)
-        self.popup.setSelectionBehavior(QTreeWidget.SelectRows)
-        self.popup.setFrameStyle(QFrame.Box | QFrame.Plain)
-        self.popup.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.popup.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.popup.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.popup.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Plain)
+        self.popup.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.popup.header().hide()
 
         self.popup.installEventFilter(self)
@@ -46,28 +45,28 @@ class GSuggestCompletion(QObject):
     def eventFilter(self, obj: QObject, ev: QEvent):
         if obj is not self.popup:
             return False
-        if ev.type() == QEvent.MouseButtonPress:
+        if ev.type() == QEvent.Type.MouseButtonPress:
             self.popup.hide()
             self.editor.setFocus()
             return True
 
-        if ev.type() == QEvent.KeyPress:
+        if ev.type() == QEvent.Type.KeyPress:
             consumed = False
             key = ev.key()
-            if key in (Qt.Key_Enter, Qt.Key_Return):
+            if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
                 self.done_completion()
                 consumed = True
-            elif key == Qt.Key_Escape:
+            elif key == Qt.Key.Key_Escape:
                 self.editor.setFocus()
                 self.popup.hide()
                 consumed = True
             elif key in (
-                Qt.Key_Up,
-                Qt.Key_Down,
-                Qt.Key_Home,
-                Qt.Key_End,
-                Qt.Key_PageUp,
-                Qt.Key_PageDown,
+                Qt.Key.Key_Up,
+                Qt.Key.Key_Down,
+                Qt.Key.Key_Home,
+                Qt.Key.Key_End,
+                Qt.Key.Key_PageUp,
+                Qt.Key.Key_PageDown,
             ):
                 pass
             else:
@@ -77,11 +76,11 @@ class GSuggestCompletion(QObject):
             return consumed
         return False
 
-    def show_completion(self, choices: List[str]):
+    def show_completion(self, choices: list[str]):
         if not choices:
             return
         pal = self.editor.palette()
-        color = pal.color(QPalette.Disabled, QPalette.WindowText)
+        color = pal.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText)
 
         self.popup.setUpdatesEnabled(False)
         self.popup.clear()
@@ -120,15 +119,14 @@ class GSuggestCompletion(QObject):
 
     @Slot(QNetworkReply)
     def handle_network_data(self, network_reply: QNetworkReply):
-        url = network_reply.url()
-        if network_reply.error() == QNetworkReply.NoError:
-            choices: List[str] = []
+        if network_reply.error() == QNetworkReply.NetworkError.NoError:
+            choices: list[str] = []
 
             response: QByteArray = network_reply.readAll()
-            xml = QXmlStreamReader(response)
+            xml = QXmlStreamReader(str(response))
             while not xml.atEnd():
                 xml.readNext()
-                if xml.tokenType() == QXmlStreamReader.StartElement:
+                if xml.tokenType() == QXmlStreamReader.TokenType.StartElement:
                     if xml.name() == "suggestion":
                         s = xml.attributes().value("data")
                         choices.append(s)

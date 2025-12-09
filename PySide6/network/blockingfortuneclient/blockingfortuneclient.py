@@ -1,16 +1,18 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the network/blockingfortunclient example from Qt v5.x, originating from PyQt"""
 
 from PySide6.QtCore import (Signal, QDataStream, QMutex, QMutexLocker,
-        QThread, QWaitCondition)
+                            QThread, QWaitCondition)
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import (QApplication, QDialogButtonBox, QGridLayout,
-        QLabel, QLineEdit, QMessageBox, QPushButton, QWidget)
+                               QLabel, QLineEdit, QMessageBox, QPushButton,
+                               QWidget)
 from PySide6.QtNetwork import (QAbstractSocket, QHostAddress, QNetworkInterface,
-        QTcpSocket)
+                               QTcpSocket)
 
 
 class FortuneThread(QThread):
@@ -94,10 +96,11 @@ class BlockingClient(QWidget):
         port_label = QLabel("S&erver port:")
 
         for ip_address in QNetworkInterface.allAddresses():
-            if ip_address != QHostAddress.LocalHost and ip_address.toIPv4Address() != 0:
+            if (ip_address != QHostAddress.SpecialAddress.LocalHost
+                    and ip_address.toIPv4Address() != 0):
                 break
         else:
-            ip_address = QHostAddress(QHostAddress.LocalHost)
+            ip_address = QHostAddress(QHostAddress.SpecialAddress.LocalHost)
 
         ip_address = ip_address.toString()
 
@@ -109,7 +112,7 @@ class BlockingClient(QWidget):
         port_label.setBuddy(self._port_line_edit)
 
         self._status_label = QLabel(
-                "This example requires that you run the Fortune Server example as well.")
+            "This example requires that you run the Fortune Server example as well.")
         self._status_label.setWordWrap(True)
 
         self._get_fortune_button = QPushButton("Get Fortune")
@@ -119,8 +122,8 @@ class BlockingClient(QWidget):
         quit_button = QPushButton("Quit")
 
         button_box = QDialogButtonBox()
-        button_box.addButton(self._get_fortune_button, QDialogButtonBox.ActionRole)
-        button_box.addButton(quit_button, QDialogButtonBox.RejectRole)
+        button_box.addButton(self._get_fortune_button, QDialogButtonBox.ButtonRole.ActionRole)
+        button_box.addButton(quit_button, QDialogButtonBox.ButtonRole.RejectRole)
 
         self._get_fortune_button.clicked.connect(self.request_new_fortune)
         quit_button.clicked.connect(self.close)
@@ -144,7 +147,7 @@ class BlockingClient(QWidget):
     def request_new_fortune(self):
         self._get_fortune_button.setEnabled(False)
         self.thread.request_new_fortune(self._host_line_edit.text(),
-                int(self._port_line_edit.text()))
+                                        int(self._port_line_edit.text()))
 
     def show_fortune(self, nextFortune):
         if nextFortune == self._current_fortune:
@@ -156,24 +159,24 @@ class BlockingClient(QWidget):
         self._get_fortune_button.setEnabled(True)
 
     def display_error(self, socketError, message):
-        if socketError == QAbstractSocket.HostNotFoundError:
+        if socketError == QAbstractSocket.SocketError.HostNotFoundError:
             QMessageBox.information(self, "Blocking Fortune Client",
-                    "The host was not found. Please check the host and port "
-                    "settings.")
-        elif socketError == QAbstractSocket.ConnectionRefusedError:
+                                    "The host was not found. Please check the host and port "
+                                    "settings.")
+        elif socketError == QAbstractSocket.SocketError.ConnectionRefusedError:
             QMessageBox.information(self, "Blocking Fortune Client",
-                    "The connection was refused by the peer. Make sure the "
-                    "fortune server is running, and check that the host name "
-                    "and port settings are correct.")
+                                    "The connection was refused by the peer. Make sure the "
+                                    "fortune server is running, and check that the host name "
+                                    "and port settings are correct.")
         else:
             QMessageBox.information(self, "Blocking Fortune Client",
-                    f"The following error occurred: {message}.")
+                                    f"The following error occurred: {message}.")
 
         self._get_fortune_button.setEnabled(True)
 
     def enable_get_fortune_button(self):
-        self._get_fortune_button.setEnabled(self._host_line_edit.text() != '' and
-                self._port_line_edit.text() != '')
+        self._get_fortune_button.setEnabled(self._host_line_edit.text() != ''
+                                            and self._port_line_edit.text() != '')
 
 
 if __name__ == '__main__':

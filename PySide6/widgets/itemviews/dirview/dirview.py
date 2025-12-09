@@ -1,5 +1,6 @@
 # Copyright (C) 2020 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -57,4 +58,3 @@ if __name__ == "__main__":
     tree.show()
 
     sys.exit(app.exec())
-

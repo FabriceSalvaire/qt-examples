@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from pathlib import Path
 import sys
@@ -13,7 +14,7 @@ class DragWidget(QFrame):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setMinimumSize(200, 200)
-        self.setFrameStyle(QFrame.Sunken | QFrame.StyledPanel)
+        self.setFrameStyle(QFrame.Shadow.Sunken | QFrame.Shape.StyledPanel)
         self.setAcceptDrops(True)
 
         path = Path(__file__).resolve().parent
@@ -22,24 +23,24 @@ class DragWidget(QFrame):
         boat_icon.setPixmap(QPixmap(path / "images" / "boat.png"))
         boat_icon.move(10, 10)
         boat_icon.show()
-        boat_icon.setAttribute(Qt.WA_DeleteOnClose)
+        boat_icon.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         car_icon = QLabel(self)
         car_icon.setPixmap(QPixmap(path / "images" / "car.png"))
         car_icon.move(100, 10)
         car_icon.show()
-        car_icon.setAttribute(Qt.WA_DeleteOnClose)
+        car_icon.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         house_icon = QLabel(self)
         house_icon.setPixmap(QPixmap(path / "images" / "house.png"))
         house_icon.move(10, 80)
         house_icon.show()
-        house_icon.setAttribute(Qt.WA_DeleteOnClose)
+        house_icon.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat("application/x-dnditem_data"):
             if event.source() == self:
-                event.setDropAction(Qt.MoveAction)
+                event.setDropAction(Qt.DropAction.MoveAction)
                 event.accept()
             else:
                 event.acceptProposedAction()
@@ -49,7 +50,7 @@ class DragWidget(QFrame):
     def dragMoveEvent(self, event):
         if event.mimeData().hasFormat("application/x-dnditem_data"):
             if event.source() == self:
-                event.setDropAction(Qt.MoveAction)
+                event.setDropAction(Qt.DropAction.MoveAction)
                 event.accept()
             else:
                 event.acceptProposedAction()
@@ -59,7 +60,7 @@ class DragWidget(QFrame):
     def dropEvent(self, event):
         if event.mimeData().hasFormat("application/x-dnditem_data"):
             item_data: QByteArray = event.mimeData().data("application/x-dnditem_data")
-            data_stream = QDataStream(item_data, QIODevice.ReadOnly)
+            data_stream = QDataStream(item_data, QIODevice.OpenModeFlag.ReadOnly)
 
             pixmap = QPixmap()
             offset = QPoint()
@@ -70,10 +71,10 @@ class DragWidget(QFrame):
             new_icon.setPixmap(pixmap)
             new_icon.move(event.position().toPoint() - offset)
             new_icon.show()
-            new_icon.setAttribute(Qt.WA_DeleteOnClose)
+            new_icon.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
             if event.source() == self:
-                event.setDropAction(Qt.MoveAction)
+                event.setDropAction(Qt.DropAction.MoveAction)
                 event.accept()
             else:
                 event.acceptProposedAction()
@@ -88,7 +89,7 @@ class DragWidget(QFrame):
         pixmap = child.pixmap()
 
         item_data = QByteArray()
-        data_stream = QDataStream(item_data, QIODevice.WriteOnly)
+        data_stream = QDataStream(item_data, QIODevice.OpenModeFlag.WriteOnly)
 
         data_stream << pixmap << QPoint(event.position().toPoint() - child.pos())
 
@@ -107,7 +108,8 @@ class DragWidget(QFrame):
 
         child.setPixmap(temp_pixmap)
 
-        if drag.exec(Qt.CopyAction | Qt.MoveAction, Qt.CopyAction) == Qt.MoveAction:
+        if drag.exec(Qt.DropAction.CopyAction | Qt.DropAction.MoveAction,
+                     Qt.DropAction.CopyAction) == Qt.DropAction.MoveAction:
             child.close()
         else:
             child.show()

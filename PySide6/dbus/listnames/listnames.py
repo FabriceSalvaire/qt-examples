@@ -1,12 +1,12 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the QtDBus listnames example from Qt v6.x"""
 
 import sys
 from PySide6.QtCore import QCoreApplication
-from PySide6.QtDBus import (QDBusConnection, QDBusConnectionInterface,
-                            QDBusInterface, QDBusReply)
+from PySide6.QtDBus import QDBusConnection, QDBusInterface, QDBusReply
 
 
 def method1():

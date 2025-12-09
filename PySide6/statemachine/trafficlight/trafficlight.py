@@ -1,6 +1,7 @@
 # Copyright (C) 2010 velociraptor Genjix <aphidia@hotmail.com>
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
@@ -37,7 +38,7 @@ class LightWidget(QWidget):
         if not self._on_val:
             return
         with QPainter(self) as painter:
-            painter.setRenderHint(QPainter.Antialiasing)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
             painter.setBrush(self.color)
             painter.drawEllipse(0, 0, self.width(), self.height())
 
@@ -48,14 +49,14 @@ class TrafficLightWidget(QWidget):
     def __init__(self):
         super().__init__()
         vbox = QVBoxLayout(self)
-        self._red_light = LightWidget(Qt.red)
+        self._red_light = LightWidget(Qt.GlobalColor.red)
         vbox.addWidget(self._red_light)
-        self._yellow_light = LightWidget(Qt.yellow)
+        self._yellow_light = LightWidget(Qt.GlobalColor.yellow)
         vbox.addWidget(self._yellow_light)
-        self._green_light = LightWidget(Qt.green)
+        self._green_light = LightWidget(Qt.GlobalColor.green)
         vbox.addWidget(self._green_light)
         pal = QPalette()
-        pal.setColor(QPalette.Window, Qt.black)
+        pal.setColor(QPalette.ColorRole.Window, Qt.GlobalColor.black)
         self.setPalette(pal)
         self.setAutoFillBackground(True)
 

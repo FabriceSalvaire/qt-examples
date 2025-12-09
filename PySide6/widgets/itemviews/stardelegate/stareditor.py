@@ -2,6 +2,7 @@
 # Copyright (C) 2011 Arun Srinivasan <rulfzid@gmail.com>
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtWidgets import (QWidget)
 from PySide6.QtGui import (QPainter)
@@ -55,8 +56,7 @@ class StarEditor(QWidget):
         """ Calculate which star the user's mouse cursor is currently
             hovering over.
         """
-        star = (x / (self.star_rating.sizeHint().width() /
-                     self.star_rating.MAX_STAR_COUNT)) + 1
+        star = (x / (self.star_rating.sizeHint().width() / self.star_rating.MAX_STAR_COUNT)) + 1
         if (star <= 0) or (star > self.star_rating.MAX_STAR_COUNT):
             return -1
 

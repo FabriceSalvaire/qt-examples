@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/dialogs/extension example from Qt v5.x"""
 
@@ -32,9 +33,9 @@ class FindDialog(QDialog):
         more_button.setCheckable(True)
         more_button.setAutoDefault(False)
 
-        button_box = QDialogButtonBox(Qt.Vertical)
-        button_box.addButton(find_button, QDialogButtonBox.ActionRole)
-        button_box.addButton(more_button, QDialogButtonBox.ActionRole)
+        button_box = QDialogButtonBox(Qt.Orientation.Vertical)
+        button_box.addButton(find_button, QDialogButtonBox.ButtonRole.ActionRole)
+        button_box.addButton(more_button, QDialogButtonBox.ButtonRole.ActionRole)
 
         extension = QWidget()
 
@@ -62,7 +63,7 @@ class FindDialog(QDialog):
         left_layout.addStretch(1)
 
         main_layout = QGridLayout(self)
-        main_layout.setSizeConstraint(QLayout.SetFixedSize)
+        main_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
         main_layout.addLayout(left_layout, 0, 0)
         main_layout.addWidget(button_box, 0, 1)
         main_layout.addWidget(extension, 1, 0, 1, 2)

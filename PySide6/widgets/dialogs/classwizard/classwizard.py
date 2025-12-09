@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import os
 from pathlib import Path
@@ -13,9 +14,9 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QCheckBox, QFormLayout,
                                QMessageBox, QToolButton, QVBoxLayout, QWizard,
                                QWizardPage)
 
-from listchooser import ListChooser, PropertyChooser, SignalChooser
+from listchooser import PropertyChooser, SignalChooser
 
-import classwizard_rc
+import classwizard_rc  # noqa: F401
 
 
 BASE_CLASSES = ['<None>', 'PySide6.QtCore.QObject',
@@ -64,9 +65,9 @@ class ClassWizard(QWizard):
         self._output_index = self.addPage(OutputFilesPage())
         self.addPage(ConclusionPage())
 
-        self.setPixmap(QWizard.BannerPixmap,
+        self.setPixmap(QWizard.WizardPixmap.BannerPixmap,
                        QPixmap(':/images/banner.png'))
-        self.setPixmap(QWizard.BackgroundPixmap,
+        self.setPixmap(QWizard.WizardPixmap.BackgroundPixmap,
                        QPixmap(':/images/background.png'))
 
         self.setWindowTitle("Class Wizard")
@@ -217,7 +218,7 @@ class IntroPage(QWizardPage):
         super().__init__(parent)
 
         self.setTitle("Introduction")
-        self.setPixmap(QWizard.WatermarkPixmap,
+        self.setPixmap(QWizard.WizardPixmap.WatermarkPixmap,
                        QPixmap(':/images/watermark1.png'))
 
         label = QLabel(INTRODUCTION)
@@ -234,7 +235,7 @@ class ClassInfoPage(QWizardPage):
         self.setTitle("Class Information")
         self.setSubTitle("Specify basic information about the class for "
                          "which you want to generate a skeleton source code file.")
-        self.setPixmap(QWizard.LogoPixmap,
+        self.setPixmap(QWizard.WizardPixmap.LogoPixmap,
                        QPixmap(':/qt-project.org/logos/pysidelogo.png'))
 
         class_name_line_edit = QLineEdit()
@@ -277,7 +278,7 @@ class QObjectPage(QWizardPage):
 
         self.setTitle("QObject parameters")
         self.setSubTitle("Specify the signals, slots and properties.")
-        self.setPixmap(QWizard.LogoPixmap,
+        self.setPixmap(QWizard.WizardPixmap.LogoPixmap,
                        QPixmap(':/qt-project.org/logos/pysidelogo.png'))
         layout = QVBoxLayout(self)
         self._properties_chooser = PropertyChooser()
@@ -295,7 +296,7 @@ class OutputFilesPage(QWizardPage):
         self.setTitle("Output Files")
         self.setSubTitle("Specify where you want the wizard to put the "
                          "generated skeleton code.")
-        self.setPixmap(QWizard.LogoPixmap,
+        self.setPixmap(QWizard.WizardPixmap.LogoPixmap,
                        QPixmap(':/qt-project.org/logos/pysidelogo.png'))
 
         output_dir_label = QLabel("&Output directory:")
@@ -333,7 +334,7 @@ class OutputFilesPage(QWizardPage):
 
     def _choose_output_dir(self):
         directory = QFileDialog.getExistingDirectory(self, "Output Directory",
-                                               self.output_dir())
+                                                     self.output_dir())
         if directory:
             self.set_output_dir(directory)
 
@@ -353,7 +354,7 @@ class ConclusionPage(QWizardPage):
         super().__init__(parent)
 
         self.setTitle("Conclusion")
-        self.setPixmap(QWizard.WatermarkPixmap,
+        self.setPixmap(QWizard.WizardPixmap.WatermarkPixmap,
                        QPixmap(':/images/watermark1.png'))
 
         self.label = QLabel()
@@ -367,7 +368,7 @@ class ConclusionPage(QWizardPage):
         layout.addWidget(self._launch_check_box)
 
     def initializePage(self):
-        finish_text = self.wizard().buttonText(QWizard.FinishButton)
+        finish_text = self.wizard().buttonText(QWizard.WizardButton.FinishButton)
         finish_text = finish_text.replace('&', '')
         self.label.setText(f"Click {finish_text} to generate the class skeleton.")
         self._launch_check_box.setChecked(True)

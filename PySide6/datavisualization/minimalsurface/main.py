@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import os
 import sys
@@ -23,7 +24,7 @@ if __name__ == '__main__':
     print(DESCRIPTION)
 
     surface = Q3DSurface()
-    surface.setFlags(surface.flags() ^ Qt.FramelessWindowHint)
+    surface.setFlags(surface.flags() ^ Qt.WindowType.FramelessWindowHint)
     axis = surface.axisX()
     axis.setTitle("X")
     axis.setTitleVisible(True)

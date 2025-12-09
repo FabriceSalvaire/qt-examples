@@ -1,14 +1,16 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
-"""PySide6 port of the widgets/draganddrop/draggabletext example from Qt v5.x, originating from PyQt"""
+"""PySide6 port of the widgets/draganddrop/draggabletext example from Qt v5.x,
+   originating from PyQt"""
 
 from PySide6.QtCore import QFile, QIODevice, QMimeData, QPoint, Qt, QTextStream
-from PySide6.QtGui import QDrag, QPalette, QPixmap
+from PySide6.QtGui import QDrag, QPixmap
 from PySide6.QtWidgets import QApplication, QFrame, QLabel, QWidget
 
-import draggabletext_rc
+import draggabletext_rc  # noqa: F401
 
 
 class DragLabel(QLabel):
@@ -16,8 +18,8 @@ class DragLabel(QLabel):
         super().__init__(text, parent)
 
         self.setAutoFillBackground(True)
-        self.setFrameShape(QFrame.Panel)
-        self.setFrameShadow(QFrame.Raised)
+        self.setFrameShape(QFrame.Shape.Panel)
+        self.setFrameShadow(QFrame.Shadow.Raised)
 
     def mousePressEvent(self, event):
         hot_spot = event.position().toPoint()
@@ -36,9 +38,10 @@ class DragLabel(QLabel):
         drag.setPixmap(pixmap)
         drag.setHotSpot(hot_spot)
 
-        drop_action = drag.exec(Qt.CopyAction | Qt.MoveAction, Qt.CopyAction)
+        drop_action = drag.exec(Qt.DropAction.CopyAction | Qt.DropAction.MoveAction,
+                                Qt.DropAction.CopyAction)
 
-        if drop_action == Qt.MoveAction:
+        if drop_action == Qt.DropAction.MoveAction:
             self.close()
             self.update()
 
@@ -48,7 +51,7 @@ class DragWidget(QWidget):
         super().__init__(parent)
 
         dictionary_file = QFile(':/dictionary/words.txt')
-        dictionary_file.open(QIODevice.ReadOnly)
+        dictionary_file.open(QIODevice.OpenModeFlag.ReadOnly)
 
         x = 5
         y = 5
@@ -62,10 +65,6 @@ class DragWidget(QWidget):
                 x = 5
                 y += word_label.height() + 2
 
-        new_palette = self.palette()
-        new_palette.setColor(QPalette.Window, Qt.white)
-        self.setPalette(new_palette)
-
         self.setAcceptDrops(True)
         self.setMinimumSize(400, max(200, y))
         self.setWindowTitle("Draggable Text")
@@ -73,7 +72,7 @@ class DragWidget(QWidget):
     def dragEnterEvent(self, event):
         if event.mimeData().hasText():
             if event.source() in self.children():
-                event.setDropAction(Qt.MoveAction)
+                event.setDropAction(Qt.DropAction.MoveAction)
                 event.accept()
             else:
                 event.acceptProposedAction()
@@ -100,7 +99,7 @@ class DragWidget(QWidget):
                 position += QPoint(new_label.width(), 0)
 
             if event.source() in self.children():
-                event.setDropAction(Qt.MoveAction)
+                event.setDropAction(Qt.DropAction.MoveAction)
                 event.accept()
             else:
                 event.acceptProposedAction()

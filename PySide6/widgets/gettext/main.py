@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from pathlib import Path
 import gettext
@@ -23,7 +24,7 @@ class Window(QMainWindow):
         quit_action.triggered.connect(self.close)
 
         self._list_widget = QListWidget()
-        self._list_widget.setSelectionMode(QAbstractItemView.MultiSelection)
+        self._list_widget.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self._list_widget.selectionModel().selectionChanged.connect(self.selection_changed)
         self._list_widget.addItem("C++")
         self._list_widget.addItem("Java")

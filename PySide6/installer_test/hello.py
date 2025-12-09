@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """
 hello.py
@@ -31,11 +32,11 @@ class MyWidget(QWidget):
         super().__init__()
 
         self.hello = ["Hallo Welt", "你好，世界", "Hei maailma",
-            "Hola Mundo", "Привет мир"]
+                      "Hola Mundo", "Привет мир"]
 
         self.button = QPushButton("Click me!")
         self.text = QLabel(f"Hello World auto_quit={auto_quit}")
-        self.text.setAlignment(Qt.AlignCenter)
+        self.text.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.text)
@@ -53,7 +54,10 @@ class MyWidget(QWidget):
 if __name__ == "__main__":
     print("Start of hello.py       ", time.ctime())
     print("  sys.version         = ", sys.version.splitlines()[0])
-    print("  platform.platform() = ", platform.platform())
+    # Nuitka and hence pyside6-deploy fails on Python versions <= 3.9
+    # when this module is used
+    if sys.version_info.minor > 9:
+        print("  platform.platform() = ", platform.platform())
 
     app = QApplication()
 

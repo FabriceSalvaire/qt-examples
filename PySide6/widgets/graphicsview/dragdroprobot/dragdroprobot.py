@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 import math
@@ -13,7 +14,7 @@ from PySide6.QtWidgets import (QApplication, QGraphicsItem,
                                QGraphicsItemAnimation, QGraphicsScene,
                                QGraphicsView)
 
-import dragdroprobot_rc
+import dragdroprobot_rc  # noqa: F401
 
 
 def random(boundary):
@@ -31,29 +32,29 @@ class ColorItem(QGraphicsItem):
         (r, g, b) = (self.color.red(), self.color.green(), self.color.blue())
         self.setToolTip(
             f"QColor({r}, {g}, {b})\nClick and drag this color onto the robot!")
-        self.setCursor(Qt.OpenHandCursor)
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
         self._start_drag_distance = QApplication.startDragDistance()
 
     def boundingRect(self):
         return QRectF(-15.5, -15.5, 34, 34)
 
     def paint(self, painter, option, widget):
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(Qt.darkGray)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(Qt.GlobalColor.darkGray)
         painter.drawEllipse(-12, -12, 30, 30)
-        painter.setPen(QPen(Qt.black, 1))
+        painter.setPen(QPen(Qt.GlobalColor.black, 1))
         painter.setBrush(QBrush(self.color))
         painter.drawEllipse(-15, -15, 30, 30)
 
     def mousePressEvent(self, event):
-        if event.button() != Qt.LeftButton:
+        if event.button() != Qt.MouseButton.LeftButton:
             event.ignore()
             return
 
-        self.setCursor(Qt.ClosedHandCursor)
+        self.setCursor(Qt.CursorShape.ClosedHandCursor)
 
     def mouseMoveEvent(self, event):
-        start = QPointF(event.buttonDownScreenPos(Qt.LeftButton))
+        start = QPointF(event.buttonDownScreenPos(Qt.MouseButton.LeftButton))
         if QLineF(event.screenPos(), start).length() < self._start_drag_distance:
             return
 
@@ -73,11 +74,11 @@ class ColorItem(QGraphicsItem):
             mime.setText(f"#{r:02x}{g:02x}{b:02x}")
 
             pixmap = QPixmap(34, 34)
-            pixmap.fill(Qt.white)
+            pixmap.fill(Qt.GlobalColor.white)
 
             with QPainter(pixmap) as painter:
                 painter.translate(15, 15)
-                painter.setRenderHint(QPainter.Antialiasing)
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing)
                 self.paint(painter, None, None)
 
             pixmap.setMask(pixmap.createHeuristicMask())
@@ -86,25 +87,25 @@ class ColorItem(QGraphicsItem):
             drag.setHotSpot(QPoint(15, 20))
 
         drag.exec()
-        self.setCursor(Qt.OpenHandCursor)
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
 
     def mouseReleaseEvent(self, event):
-        self.setCursor(Qt.OpenHandCursor)
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
 
 
 class RobotPart(QGraphicsItem):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.color = QColor(Qt.lightGray)
+        self.color = QColor(Qt.GlobalColor.lightGray)
         self.pixmap = None
         self._drag_over = False
 
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, event):
-        if (event.mimeData().hasColor() or
-                (isinstance(self, RobotHead) and event.mimeData().hasImage())):
+        if (event.mimeData().hasColor()
+                or (isinstance(self, RobotHead) and event.mimeData().hasImage())):
             event.setAccepted(True)
             self._drag_over = True
             self.update()
@@ -131,17 +132,16 @@ class RobotHead(RobotPart):
 
     def paint(self, painter, option, widget=None):
         if not self.pixmap:
-            painter.setBrush(self._drag_over and self.color.lighter(130)
-                                            or self.color)
-            painter.drawRoundedRect(-10, -30, 20, 30, 25, 25, Qt.RelativeSize)
-            painter.setBrush(Qt.white)
+            painter.setBrush(self._drag_over and self.color.lighter(130) or self.color)
+            painter.drawRoundedRect(-10, -30, 20, 30, 25, 25, Qt.SizeMode.RelativeSize)
+            painter.setBrush(Qt.GlobalColor.white)
             painter.drawEllipse(-7, -3 - 20, 7, 7)
             painter.drawEllipse(0, -3 - 20, 7, 7)
-            painter.setBrush(Qt.black)
+            painter.setBrush(Qt.GlobalColor.black)
             painter.drawEllipse(-5, -1 - 20, 2, 2)
             painter.drawEllipse(2, -1 - 20, 2, 2)
-            painter.setPen(QPen(Qt.black, 2))
-            painter.setBrush(Qt.NoBrush)
+            painter.setPen(QPen(Qt.GlobalColor.black, 2))
+            painter.setBrush(Qt.BrushStyle.NoBrush)
             painter.drawArc(-6, -2 - 20, 12, 15, 190 * 16, 160 * 16)
         else:
             painter.scale(.2272, .2824)
@@ -154,8 +154,8 @@ class RobotTorso(RobotPart):
 
     def paint(self, painter, option, widget=None):
         painter.setBrush(self._drag_over and self.color.lighter(130)
-                                        or self.color)
-        painter.drawRoundedRect(-20, -20, 40, 60, 25, 25, Qt.RelativeSize)
+                         or self.color)
+        painter.drawRoundedRect(-20, -20, 40, 60, 25, 25, Qt.SizeMode.RelativeSize)
         painter.drawEllipse(-25, -20, 20, 20)
         painter.drawEllipse(5, -20, 20, 20)
         painter.drawEllipse(-20, 22, 20, 20)
@@ -169,7 +169,7 @@ class RobotLimb(RobotPart):
     def paint(self, painter, option, widget=None):
         painter.setBrush(self._drag_over and self.color.lighter(130) or self.color)
         painter.drawRoundedRect(self.boundingRect(), 50, 50,
-                Qt.RelativeSize)
+                                Qt.SizeMode.RelativeSize)
         painter.drawEllipse(-5, -5, 10, 10)
 
 
@@ -177,35 +177,35 @@ class Robot(RobotPart):
     def __init__(self):
         super().__init__()
 
-        self.torsoItem         = RobotTorso(self)
-        self.headItem          = RobotHead(self.torsoItem)
-        self.upperLeftArmItem  = RobotLimb(self.torsoItem)
-        self.lowerLeftArmItem  = RobotLimb(self.upperLeftArmItem)
+        self.torsoItem = RobotTorso(self)
+        self.headItem = RobotHead(self.torsoItem)
+        self.upperLeftArmItem = RobotLimb(self.torsoItem)
+        self.lowerLeftArmItem = RobotLimb(self.upperLeftArmItem)
         self._upper_right_arm_item = RobotLimb(self.torsoItem)
         self._lower_right_arm_item = RobotLimb(self._upper_right_arm_item)
         self._upper_right_leg_item = RobotLimb(self.torsoItem)
         self._lower_right_leg_item = RobotLimb(self._upper_right_leg_item)
-        self.upperLeftLegItem  = RobotLimb(self.torsoItem)
-        self.lowerLeftLegItem  = RobotLimb(self.upperLeftLegItem)
+        self.upperLeftLegItem = RobotLimb(self.torsoItem)
+        self.lowerLeftLegItem = RobotLimb(self.upperLeftLegItem)
 
         self.timeline = QTimeLine()
         settings = [
-        #             item               position    rotation at
-        #                                 x    y    time 0  /  1
-            ( self.headItem,              0,  -18,      20,   -20 ),
-            ( self.upperLeftArmItem,    -15,  -10,     190,   180 ),
-            ( self.lowerLeftArmItem,     30,    0,      50,    10 ),
-            ( self._upper_right_arm_item,    15,  -10,     300,   310 ),
-            ( self._lower_right_arm_item,    30,    0,       0,   -70 ),
-            ( self._upper_right_leg_item,    10,   32,      40,   120 ),
-            ( self._lower_right_leg_item,    30,    0,      10,    50 ),
-            ( self.upperLeftLegItem,    -10,   32,     150,    80 ),
-            ( self.lowerLeftLegItem,     30,    0,      70,    10 ),
-            ( self.torsoItem,             0,    0,       5,   -20 )
+            #         item                  position    rotation at
+            #                                x    y    time 0  /  1
+            (self.headItem,                  0,  -18,      20,   -20),  # noqa: E241
+            (self.upperLeftArmItem,        -15,  -10,     190,   180),  # noqa: E241
+            (self.lowerLeftArmItem,         30,    0,      50,    10),  # noqa: E241
+            (self._upper_right_arm_item,    15,  -10,     300,   310),  # noqa: E241
+            (self._lower_right_arm_item,    30,    0,       0,   -70),  # noqa: E241
+            (self._upper_right_leg_item,    10,   32,      40,   120),  # noqa: E241
+            (self._lower_right_leg_item,    30,    0,      10,    50),  # noqa: E241
+            (self.upperLeftLegItem,        -10,   32,     150,    80),  # noqa: E241
+            (self.lowerLeftLegItem,         30,    0,      70,    10),  # noqa: E241
+            (self.torsoItem,                 0,    0,       5,   -20)  # noqa: E241
         ]
         self.animations = []
         for item, pos_x, pos_y, rotation1, rotation2 in settings:
-            item.setPos(pos_x,pos_y)
+            item.setPos(pos_x, pos_y)
             animation = QGraphicsItemAnimation()
             animation.setItem(item)
             animation.setTimeLine(self.timeline)
@@ -215,7 +215,7 @@ class Robot(RobotPart):
         self.animations[0].setScaleAt(1, 1.1, 1.1)
 
         self.timeline.setUpdateInterval(1000 / 25)
-        curve = QEasingCurve(QEasingCurve.SineCurve)
+        curve = QEasingCurve(QEasingCurve.Type.SineCurve)
         self.timeline.setEasingCurve(curve)
         self.timeline.setLoopCount(0)
         self.timeline.setDuration(2000)
@@ -228,7 +228,7 @@ class Robot(RobotPart):
         pass
 
 
-if __name__== '__main__':
+if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     scene = QGraphicsScene(-200, -200, 400, 400)
@@ -245,8 +245,8 @@ if __name__== '__main__':
     scene.addItem(robot)
 
     view = QGraphicsView(scene)
-    view.setRenderHint(QPainter.Antialiasing)
-    view.setViewportUpdateMode(QGraphicsView.BoundingRectViewportUpdate)
+    view.setRenderHint(QPainter.RenderHint.Antialiasing)
+    view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
     view.setBackgroundBrush(QColor(230, 200, 167))
     view.setWindowTitle("Drag and Drop Robot")
     view.show()

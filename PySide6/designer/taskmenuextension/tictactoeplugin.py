@@ -1,12 +1,12 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from tictactoe import TicTacToe
 from tictactoetaskmenu import TicTacToeTaskMenuFactory
 
 from PySide6.QtGui import QIcon
-from PySide6.QtDesigner import (QExtensionManager,
-    QDesignerCustomWidgetInterface)
+from PySide6.QtDesigner import QDesignerCustomWidgetInterface
 
 
 DOM_XML = """

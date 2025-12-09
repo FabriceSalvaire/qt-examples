@@ -1,6 +1,7 @@
 # Copyright (C) 2011 Arun Srinivasan <rulfzid@gmail.com>
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import (Qt, QAbstractTableModel, QModelIndex)
 
@@ -23,7 +24,7 @@ class TableModel(QAbstractTableModel):
         """ Returns the number of columns the model holds. """
         return 2
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         """ Depending on the index and role given, return data. If not
             returning data, return None (PySide equivalent of QT's
             "invalid QVariant").
@@ -34,7 +35,7 @@ class TableModel(QAbstractTableModel):
         if not 0 <= index.row() < len(self.addresses):
             return None
 
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             name = self.addresses[index.row()]["name"]
             address = self.addresses[index.row()]["address"]
 
@@ -45,12 +46,12 @@ class TableModel(QAbstractTableModel):
 
         return None
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         """ Set the headers to be displayed. """
-        if role != Qt.DisplayRole:
+        if role != Qt.ItemDataRole.DisplayRole:
             return None
 
-        if orientation == Qt.Horizontal:
+        if orientation == Qt.Orientation.Horizontal:
             if section == 0:
                 return "Name"
             elif section == 1:
@@ -77,11 +78,11 @@ class TableModel(QAbstractTableModel):
         self.endRemoveRows()
         return True
 
-    def setData(self, index, value, role=Qt.EditRole):
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         """ Adjust the data (set it to <value>) depending on the given
             index and role.
         """
-        if role != Qt.EditRole:
+        if role != Qt.ItemDataRole.EditRole:
             return False
 
         if index.isValid() and 0 <= index.row() < len(self.addresses):
@@ -104,6 +105,6 @@ class TableModel(QAbstractTableModel):
             manually adjust each tableView to have NoEditTriggers.
         """
         if not index.isValid():
-            return Qt.ItemIsEnabled
-        return Qt.ItemFlags(QAbstractTableModel.flags(self, index) |
-                            Qt.ItemIsEditable)
+            return Qt.ItemFlag.ItemIsEnabled
+        return Qt.ItemFlags(QAbstractTableModel.flags(self, index)
+                            | Qt.ItemFlag.ItemIsEditable)

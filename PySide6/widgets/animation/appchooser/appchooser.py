@@ -1,6 +1,7 @@
 # Copyright (C) 2010 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
@@ -11,7 +12,7 @@ from PySide6.QtWidgets import (QApplication, QGraphicsScene, QGraphicsView,
                                QGraphicsWidget)
 from PySide6.QtStateMachine import QState, QStateMachine
 
-import appchooser_rc
+import appchooser_rc  # noqa: F401
 
 
 class Pixmap(QGraphicsWidget):
@@ -65,7 +66,7 @@ if __name__ == '__main__':
     p4.setGeometry(QRectF(0.0, 236.0, 64.0, 64.0))
 
     scene = QGraphicsScene(0, 0, 300, 300)
-    scene.setBackgroundBrush(Qt.white)
+    scene.setBackgroundBrush(Qt.GlobalColor.white)
     scene.addItem(p1)
     scene.addItem(p2)
     scene.addItem(p3)
@@ -73,12 +74,12 @@ if __name__ == '__main__':
 
     window = QGraphicsView(scene)
     window.setFrameStyle(0)
-    window.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-    window.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-    window.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    window.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+    window.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    window.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     machine = QStateMachine()
-    machine.setGlobalRestorePolicy(QStateMachine.RestoreProperties)
+    machine.setGlobalRestorePolicy(QStateMachine.RestorePolicy.RestoreProperties)
 
     group = QState(machine)
     selected_rect = QRect(86, 86, 128, 128)

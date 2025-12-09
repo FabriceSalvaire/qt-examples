@@ -1,21 +1,22 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the bluetooth/heartrate-game example from Qt v6.x"""
 
-import os
 from pathlib import Path
 import sys
-from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
-from PySide6.QtQml import QQmlApplicationEngine, QQmlContext
+from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtCore import QCoreApplication, QLoggingCategory, QUrl
+from PySide6.QtCore import QCoreApplication, QLoggingCategory
 
 from connectionhandler import ConnectionHandler
 from devicefinder import DeviceFinder
 from devicehandler import DeviceHandler
-from heartrate_global import simulator
+from bluetoothbaseclass import BluetoothBaseClass  # noqa: F401
+from heartrate_global import set_simulator
 
 
 if __name__ == '__main__':
@@ -27,7 +28,7 @@ if __name__ == '__main__':
     parser.add_argument("-s", "--simulator", action="store_true",
                         help="Use Simulator")
     options = parser.parse_args()
-    simulator = options.simulator
+    set_simulator(options.simulator)
     if options.verbose:
         QLoggingCategory.setFilterRules("qt.bluetooth* = true")
 
@@ -43,11 +44,12 @@ if __name__ == '__main__':
         "deviceFinder": deviceFinder,
         "deviceHandler": deviceHandler})
 
-    qml_file = os.fspath(Path(__file__).resolve().parent / "qml" / "main.qml")
-    engine.load(QUrl.fromLocalFile(qml_file))
+    engine.addImportPath(Path(__file__).parent)
+    engine.loadFromModule("HeartRateGame", "Main")
+
     if not engine.rootObjects():
         sys.exit(-1)
 
-    ex = QCoreApplication.exec()
+    exit_code = QCoreApplication.exec()
     del engine
-    sys.exit(ex)
+    sys.exit(exit_code)

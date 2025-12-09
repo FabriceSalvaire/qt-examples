@@ -2,6 +2,7 @@
 # Copyright (C) 2011 Arun Srinivasan <rulfzid@gmail.com>
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtWidgets import QStyledItemDelegate, QStyle
 
@@ -33,7 +34,7 @@ class StarDelegate(QStyledItemDelegate):
 
             # If the row is currently selected, we need to make sure we
             # paint the background accordingly.
-            if option.state & QStyle.State_Selected:
+            if option.state & QStyle.StateFlag.State_Selected:
                 # The original C++ example used option.palette.foreground() to
                 # get the brush for painting, but there are a couple of
                 # problems with that:
@@ -111,15 +112,15 @@ if __name__ == "__main__":
     # Create and populate the tableWidget
     table_widget = QTableWidget(4, 4)
     table_widget.setItemDelegate(StarDelegate())
-    table_widget.setEditTriggers(QAbstractItemView.DoubleClicked |
-                                QAbstractItemView.SelectedClicked)
-    table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
+    table_widget.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked
+                                 | QAbstractItemView.EditTrigger.SelectedClicked)
+    table_widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
     table_widget.setHorizontalHeaderLabels(["Title", "Genre", "Artist", "Rating"])
 
-    data = [ ["Mass in B-Minor", "Baroque", "J.S. Bach", 5],
-             ["Three More Foxes", "Jazz", "Maynard Ferguson", 4],
-             ["Sex Bomb", "Pop", "Tom Jones", 3],
-             ["Barbie Girl", "Pop", "Aqua", 5] ]
+    data = [["Mass in B-Minor", "Baroque", "J.S. Bach", 5],
+            ["Three More Foxes", "Jazz", "Maynard Ferguson", 4],
+            ["Sex Bomb", "Pop", "Tom Jones", 3],
+            ["Barbie Girl", "Pop", "Aqua", 5]]
 
     for r in range(len(data)):
         table_widget.setItem(r, 0, QTableWidgetItem(data[r][0]))

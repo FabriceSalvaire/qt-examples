@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 WebEngine QtQuick 2 Example"""
 
@@ -14,7 +15,7 @@ from PySide6.QtQml import QQmlApplicationEngine, QmlElement, QmlSingleton
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtWebEngineQuick import QtWebEngineQuick
 
-import rc_resources
+import rc_resources  # noqa: F401
 
 
 # To be used on the @QmlElement decorator
@@ -40,20 +41,25 @@ class Utils(QObject):
 
 
 if __name__ == '__main__':
-    QCoreApplication.setApplicationName("Quick Nano Browser");
-    QCoreApplication.setOrganizationName("QtProject");
+    QCoreApplication.setApplicationName("Quick Nano Browser")
+    QCoreApplication.setOrganizationName("QtProject")
 
     QtWebEngineQuick.initialize()
 
     argument_parser = ArgumentParser(description="Quick Nano Browser",
                                      formatter_class=RawTextHelpFormatter)
+    argument_parser.add_argument("--single-process", "-s", action="store_true",
+                                 help="Run in single process mode (trouble shooting)")
     argument_parser.add_argument("url", help="The URL to open",
                                  nargs='?', type=str)
     options = argument_parser.parse_args()
 
-    url = url_from_user_input(options.url) if options.url else QUrl("https://www.qt.io")
+    url = url_from_user_input(options.url) if options.url else QUrl("chrome://qt")
 
-    app = QGuiApplication([])
+    app_args = sys.argv
+    if options.single_process:
+        app_args.extend(["--webEngineArgs", "--single-process"])
+    app = QGuiApplication(app_args)
     engine = QQmlApplicationEngine()
     qml_file = os.fspath(Path(__file__).resolve().parent / 'ApplicationRoot.qml')
     engine.load(QUrl.fromLocalFile(qml_file))
@@ -62,4 +68,6 @@ if __name__ == '__main__':
 
     QMetaObject.invokeMethod(engine.rootObjects()[0], "load", Q_ARG("QVariant", url))
 
-    app.exec()
+    exit_code = app.exec()
+    del engine
+    sys.exit(exit_code)

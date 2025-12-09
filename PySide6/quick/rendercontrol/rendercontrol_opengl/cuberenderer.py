@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import ctypes
 import numpy
@@ -7,8 +8,7 @@ from OpenGL.GL import (GL_COLOR_BUFFER_BIT, GL_CULL_FACE, GL_CW,
                        GL_DEPTH_BUFFER_BIT, GL_DEPTH_TEST, GL_FALSE, GL_FLOAT,
                        GL_TEXTURE_2D, GL_TRIANGLES)
 
-from PySide6.QtGui import (QMatrix4x4, QOffscreenSurface, QOpenGLContext,
-                           QOpenGLFunctions, QWindow)
+from PySide6.QtGui import QMatrix4x4, QOpenGLContext
 from PySide6.QtOpenGL import (QOpenGLBuffer, QOpenGLShader,
                               QOpenGLShaderProgram, QOpenGLVertexArrayObject)
 from shiboken6 import VoidPtr
@@ -46,27 +46,27 @@ VERTEXES = numpy.array([-0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5,
                         -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5,
                         -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5,
 
-                        0.5, 0.5,  -0.5, -0.5, 0.5,  0.5,  -0.5,  0.5,  -0.5,
-                        -0.5,  0.5,  0.5,  0.5,  0.5,  -0.5, 0.5, 0.5,  0.5,
-                        -0.5,  -0.5, -0.5, -0.5, -0.5, 0.5,  0.5, -0.5, -0.5,
-                        0.5, -0.5, 0.5,  0.5,  -0.5, -0.5, -0.5,  -0.5, 0.5],
+                        0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5,
+                        -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5,
+                        -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5,
+                        0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5],
                        dtype=numpy.float32)
 
 
-TEX_COORDS = numpy.array([0.0, 0.0,  1.0, 1.0,  1.0, 0.0,
-                          1.0, 1.0,  0.0, 0.0,  0.0, 1.0,
-                          1.0, 1.0,  1.0, 0.0,  0.0, 1.0,
-                          0.0, 0.0,  0.0, 1.0,  1.0, 0.0,
+TEX_COORDS = numpy.array([0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
+                          1.0, 1.0, 0.0, 0.0, 0.0, 1.0,
+                          1.0, 1.0, 1.0, 0.0, 0.0, 1.0,
+                          0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
 
-                          1.0, 1.0,  1.0, 0.0,  0.0, 1.0,
-                          0.0, 0.0,  0.0, 1.0,  1.0, 0.0,
-                          0.0, 0.0,  1.0, 1.0,  1.0, 0.0,
-                          1.0, 1.0,  0.0, 0.0,  0.0, 1.0,
+                          1.0, 1.0, 1.0, 0.0, 0.0, 1.0,
+                          0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
+                          0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
+                          1.0, 1.0, 0.0, 0.0, 0.0, 1.0,
 
-                          0.0, 1.0,  1.0, 0.0,  1.0, 1.0,
-                          1.0, 0.0,  0.0, 1.0,  0.0, 0.0,
-                          1.0, 0.0,  1.0, 1.0,  0.0, 0.0,
-                          0.0, 1.0,  0.0, 0.0,  1.0, 1.0], dtype=numpy.float32)
+                          0.0, 1.0, 1.0, 0.0, 1.0, 1.0,
+                          1.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+                          1.0, 0.0, 1.0, 1.0, 0.0, 0.0,
+                          0.0, 1.0, 0.0, 0.0, 1.0, 1.0], dtype=numpy.float32)
 
 
 class CubeRenderer():
@@ -103,9 +103,9 @@ class CubeRenderer():
                      w.height() * w.devicePixelRatio())
 
         self.m_program = QOpenGLShaderProgram()
-        self.m_program.addCacheableShaderFromSourceCode(QOpenGLShader.Vertex,
+        self.m_program.addCacheableShaderFromSourceCode(QOpenGLShader.ShaderTypeBit.Vertex,
                                                         VERTEXSHADER_SOURCE)
-        self.m_program.addCacheableShaderFromSourceCode(QOpenGLShader.Fragment,
+        self.m_program.addCacheableShaderFromSourceCode(QOpenGLShader.ShaderTypeBit.Fragment,
                                                         FRAGMENTSHADER_SOURCE)
         self.m_program.bindAttributeLocation("vertex", 0)
         self.m_program.bindAttributeLocation("coord", 1)
@@ -114,7 +114,6 @@ class CubeRenderer():
 
         self.m_vao = QOpenGLVertexArrayObject()
         self.m_vao.create()
-        vaoBinder = QOpenGLVertexArrayObject.Binder(self.m_vao)
 
         self.m_vbo = QOpenGLBuffer()
         self.m_vbo.create()
@@ -167,7 +166,6 @@ class CubeRenderer():
             f.glEnable(GL_DEPTH_TEST)
 
             self.m_program.bind()
-            vaoBinder = QOpenGLVertexArrayObject.Binder(self.m_vao)
             # If VAOs are not supported, set the vertex attributes every time.
             if not self.m_vao.isCreated():
                 self.setupVertexAttribs()

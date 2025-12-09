@@ -1,13 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the charts/audio example from Qt v5.x"""
 
 import sys
 from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
 from PySide6.QtCore import QPointF, Slot
-from PySide6.QtMultimedia import (QAudioDevice, QAudioFormat,
-        QAudioSource, QMediaDevices)
+from PySide6.QtMultimedia import QAudioFormat, QAudioSource, QMediaDevices
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 
 

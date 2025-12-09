@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import ctypes
 import math
@@ -120,7 +121,7 @@ class Renderer(QObject, QOpenGLFunctions):
             if self._exiting:
                 return
 
-            assert(ctx.thread() == QThread.currentThread())
+            assert ctx.thread() == QThread.currentThread()
 
             # Make the context (and an offscreen surface) current for self thread.
             # The QOpenGLWidget's fbo is bound in the context.
@@ -145,10 +146,10 @@ class Renderer(QObject, QOpenGLFunctions):
             QMetaObject.invokeMethod(self._glwidget, "update")
 
     def _init_gl(self):
-        vshader = QOpenGLShader(QOpenGLShader.Vertex, self)
+        vshader = QOpenGLShader(QOpenGLShader.ShaderTypeBit.Vertex, self)
         vshader.compileSourceCode(VERTEX_SHADER)
 
-        fshader = QOpenGLShader(QOpenGLShader.Fragment, self)
+        fshader = QOpenGLShader(QOpenGLShader.ShaderTypeBit.Fragment, self)
         fshader.compileSourceCode(FRAGMENT_SHADER)
 
         self._program.addShader(vshader)

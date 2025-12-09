@@ -1,12 +1,13 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the Donut Chart Breakdown example from Qt v5.x"""
 
 
 import sys
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QColor, QFont, QPainter, QScreen
+from PySide6.QtGui import QColor, QFont, QPainter
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCharts import QChart, QChartView, QPieSeries, QPieSlice
 
@@ -38,7 +39,7 @@ class MainSlice(QPieSlice):
 class DonutBreakdownChart(QChart):
     def __init__(self, parent=None):
         super().__init__(QChart.ChartTypeCartesian,
-                                                  parent, Qt.WindowFlags())
+                         parent, Qt.WindowFlags(0))
         self.main_series = QPieSeries()
         self.main_series.setPieSize(0.7)
         self.addSeries(self.main_series)
@@ -138,7 +139,7 @@ if __name__ == "__main__":
 
     window = QMainWindow()
     chart_view = QChartView(donut_breakdown)
-    chart_view.setRenderHint(QPainter.Antialiasing)
+    chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
     window.setCentralWidget(chart_view)
     available_geometry = window.screen().availableGeometry()
     size = available_geometry.height() * 0.75

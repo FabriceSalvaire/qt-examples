@@ -1,22 +1,20 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import numpy
 from pathlib import Path
-import sys
 import weakref
 from OpenGL.GL import (GL_TEXTURE_MAG_FILTER, GL_TEXTURE_MIN_FILTER,
                        GL_NEAREST, GL_RGBA, GL_TEXTURE_2D, GL_UNSIGNED_BYTE)
 
-from PySide6.QtGui import (QMatrix4x4, QMouseEvent, QOffscreenSurface,
-                           QOpenGLContext, QOpenGLFunctions, QScreen, QSurface,
+from PySide6.QtGui import (QMouseEvent, QOffscreenSurface,
+                           QOpenGLContext, QSurface,
                            QSurfaceFormat, QWindow)
-from PySide6.QtOpenGL import (QOpenGLFramebufferObject, QOpenGLTexture,
-                              QOpenGLShaderProgram, QOpenGLVertexArrayObject,
-                              QOpenGLBuffer)
+from PySide6.QtOpenGL import QOpenGLFramebufferObject
 from PySide6.QtQml import QQmlComponent, QQmlEngine
 from PySide6.QtQuick import (QQuickGraphicsDevice,
-                             QQuickItem, QQuickRenderControl,
+                             QQuickRenderControl,
                              QQuickRenderTarget, QQuickWindow)
 from PySide6.QtCore import QCoreApplication, QTimer, QUrl, Slot
 from shiboken6 import VoidPtr
@@ -45,7 +43,7 @@ class WindowSingleThreaded(QWindow):
         self.m_quickReady = False
         self.m_dpr = 0
         self.m_status_conn_id = None
-        self.setSurfaceType(QSurface.OpenGLSurface)
+        self.setSurfaceType(QSurface.SurfaceType.OpenGLSurface)
 
         format = QSurfaceFormat()
         # Qt Quick may need a depth and stencil buffer. Always make sure these
@@ -250,7 +248,7 @@ class WindowSingleThreaded(QWindow):
         # If self is a resize after the scene is up and running, recreate the
         # texture and the Quick item and scene.
         if (self.texture_id()
-            and self.m_textureSize != self.size() * self.devicePixelRatio()):
+                and self.m_textureSize != self.size() * self.devicePixelRatio()):
             self.resizeTexture()
 
     @Slot()

@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/richtext/orderform example from Qt v5.x"""
 
@@ -45,7 +46,7 @@ class MainWindow(QMainWindow):
         self.letters.setCurrentIndex(tab_index)
 
         cursor = editor.textCursor()
-        cursor.movePosition(QTextCursor.Start)
+        cursor.movePosition(QTextCursor.MoveOperation.Start)
         top_frame = cursor.currentFrame()
         top_frame_format = top_frame.frameFormat()
         top_frame_format.setPadding(16)
@@ -53,13 +54,13 @@ class MainWindow(QMainWindow):
 
         text_format = QTextCharFormat()
         bold_format = QTextCharFormat()
-        bold_format.setFontWeight(QFont.Bold)
+        bold_format.setFontWeight(QFont.Weight.Bold)
 
         reference_frame_format = QTextFrameFormat()
         reference_frame_format.setBorder(1)
         reference_frame_format.setPadding(8)
-        reference_frame_format.setPosition(QTextFrameFormat.FloatRight)
-        reference_frame_format.setWidth(QTextLength(QTextLength.PercentageLength, 40))
+        reference_frame_format.setPosition(QTextFrameFormat.Position.FloatRight)
+        reference_frame_format.setWidth(QTextLength(QTextLength.Type.PercentageLength, 40))
         cursor.insertFrame(reference_frame_format)
 
         cursor.insertText("A company", bold_format)
@@ -86,16 +87,15 @@ class MainWindow(QMainWindow):
         cursor.insertBlock()
 
         body_frame_format = QTextFrameFormat()
-        body_frame_format.setWidth(QTextLength(QTextLength.PercentageLength, 100))
+        body_frame_format.setWidth(QTextLength(QTextLength.Type.PercentageLength, 100))
         cursor.insertFrame(body_frame_format)
 
-        cursor.insertText("I would like to place an order for the following "
-                "items:", text_format)
+        cursor.insertText("I would like to place an order for the following items:", text_format)
         cursor.insertBlock()
         cursor.insertBlock()
 
         order_table_format = QTextTableFormat()
-        order_table_format.setAlignment(Qt.AlignHCenter)
+        order_table_format.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         order_table = cursor.insertTable(1, 2, order_table_format)
 
         order_frame_format = cursor.currentFrame().frameFormat()
@@ -121,17 +121,17 @@ class MainWindow(QMainWindow):
         cursor.insertBlock()
 
         cursor.insertText("Please update my records to take account of the "
-                "following privacy information:")
+                          "following privacy information:")
         cursor.insertBlock()
 
         offers_table = cursor.insertTable(2, 2)
 
         cursor = offers_table.cellAt(0, 1).firstCursorPosition()
         cursor.insertText("I want to receive more information about your "
-                "company's products and special offers.", text_format)
+                          "company's products and special offers.", text_format)
         cursor = offers_table.cellAt(1, 1).firstCursorPosition()
         cursor.insertText("I do not want to receive any promotional "
-                "information from your company.", text_format)
+                          "information from your company.", text_format)
 
         if sendOffers:
             cursor = offers_table.cellAt(0, 0).firstCursorPosition()
@@ -153,8 +153,8 @@ class MainWindow(QMainWindow):
     def create_sample(self):
         dialog = DetailsDialog('Dialog with default values', self)
         self.create_letter('Mr Smith',
-                '12 High Street\nSmall Town\nThis country',
-                dialog.order_items(), True)
+                           '12 High Street\nSmall Town\nThis country',
+                           dialog.order_items(), True)
 
     @Slot()
     def open_dialog(self):
@@ -162,7 +162,7 @@ class MainWindow(QMainWindow):
 
         if dialog.exec() == QDialog.Accepted:
             self.create_letter(dialog.sender_name(), dialog.sender_address(),
-                    dialog.order_items(), dialog.send_offers())
+                               dialog.order_items(), dialog.send_offers())
 
     @Slot()
     def print_file(self):
@@ -189,16 +189,16 @@ class DetailsDialog(QDialog):
 
         name_label = QLabel("Name:")
         address_label = QLabel("Address:")
-        address_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        address_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
         self._name_edit = QLineEdit()
         self._address_edit = QTextEdit()
-        self._offers_check_box = QCheckBox("Send information about "
-                "products and special offers:")
+        self._offers_check_box = QCheckBox("Send information about products and special offers:")
 
         self.setup_items_table()
 
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok
+                                      | QDialogButtonBox.StandardButton.Cancel)
 
         button_box.accepted.connect(self.verify)
         button_box.rejected.connect(self.reject)
@@ -219,7 +219,7 @@ class DetailsDialog(QDialog):
 
         for row, item in enumerate(self.items):
             name = QTableWidgetItem(item)
-            name.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+            name.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
             self._items_table.setItem(row, 0, name)
             quantity = QTableWidgetItem('1')
             self._items_table.setItem(row, 1, quantity)
@@ -229,7 +229,7 @@ class DetailsDialog(QDialog):
 
         for row in range(len(self.items)):
             text = self._items_table.item(row, 0).text()
-            quantity = int(self._items_table.item(row, 1).data(Qt.DisplayRole))
+            quantity = int(self._items_table.item(row, 1).data(Qt.ItemDataRole.DisplayRole))
             order_list.append((text, max(0, quantity)))
 
         return order_list
@@ -250,9 +250,9 @@ class DetailsDialog(QDialog):
             return
 
         answer = QMessageBox.warning(self, "Incomplete Form",
-                "The form does not contain all the necessary information.\n"
-                "Do you want to discard it?",
-                QMessageBox.Yes, QMessageBox.No)
+                                     "The form does not contain all the necessary information.\n"
+                                     "Do you want to discard it?",
+                                     QMessageBox.Yes, QMessageBox.No)
 
         if answer == QMessageBox.Yes:
             self.reject()

@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the opengl/contextinfo example from Qt v5.x"""
 
@@ -15,15 +16,14 @@ from PySide6.QtGui import (QMatrix4x4, QOpenGLContext, QSurfaceFormat, QWindow)
 from PySide6.QtOpenGL import (QOpenGLBuffer, QOpenGLShader,
                               QOpenGLShaderProgram, QOpenGLVertexArrayObject)
 from PySide6.QtWidgets import (QApplication, QHBoxLayout, QMessageBox, QPlainTextEdit,
-    QWidget)
+                               QWidget)
 from PySide6.support import VoidPtr
 try:
     from OpenGL import GL
 except ImportError:
     app = QApplication(sys.argv)
     message_box = QMessageBox(QMessageBox.Critical, "ContextInfo",
-                             "PyOpenGL must be installed to run this example.",
-                             QMessageBox.Close)
+                              "PyOpenGL must be installed to run this example.", QMessageBox.Close)
     message_box.setDetailedText("Run:\npip install PyOpenGL PyOpenGL_accelerate")
     message_box.exec()
     sys.exit(1)
@@ -74,7 +74,10 @@ colors = numpy.array([1, 0, 0, 0, 1, 0, 0, 0, 1], dtype=numpy.float32)
 
 
 def print_surface_format(surface_format):
-    profile_name = 'core' if surface_format.profile() == QSurfaceFormat.CoreProfile else 'compatibility'
+    if surface_format.profile() == QSurfaceFormat.OpenGLContextProfile.CoreProfile:
+        profile_name = 'core'
+    else:
+        profile_name = 'compatibility'
     major = surface_format.majorVersion()
     minor = surface_format.minorVersion()
     return f"{profile_name} version {major}.{minor}"
@@ -83,7 +86,7 @@ def print_surface_format(surface_format):
 class RenderWindow(QWindow):
     def __init__(self, fmt):
         super().__init__()
-        self.setSurfaceType(QWindow.OpenGLSurface)
+        self.setSurfaceType(QWindow.SurfaceType.OpenGLSurface)
         self.setFormat(fmt)
         self.context = QOpenGLContext(self)
         self.context.setFormat(self.requestedFormat())
@@ -99,20 +102,22 @@ class RenderWindow(QWindow):
         self.vbo = QOpenGLBuffer()
 
         fmt = self.context.format()
-        use_new_style_shader = fmt.profile() == QSurfaceFormat.CoreProfile
+        use_new_style_shader = fmt.profile() == QSurfaceFormat.OpenGLContextProfile.CoreProfile
         # Try to handle 3.0 & 3.1 that do not have the core/compatibility profile
         # concept 3.2+ has. This may still fail since version 150 (3.2) is
         # specified in the sources but it's worth a try.
-        if (fmt.renderableType() == QSurfaceFormat.OpenGL and fmt.majorVersion() == 3
-            and fmt.minorVersion() <= 1):
-            use_new_style_shader = not fmt.testOption(QSurfaceFormat.DeprecatedFunctions)
+        if (fmt.renderableType() == QSurfaceFormat.RenderableType.OpenGL and fmt.majorVersion() == 3
+                and fmt.minorVersion() <= 1):
+            use_new_style_shader = not fmt.testOption(QSurfaceFormat.FormatOption.DeprecatedFunctions)  # noqa: E501
 
         vertex_shader = vertex_shader_source if use_new_style_shader else vertex_shader_source_110
-        fragment_shader = fragment_shader_source if use_new_style_shader else fragment_shader_source_110
-        if not self.program.addShaderFromSourceCode(QOpenGLShader.Vertex, vertex_shader):
+        fragment_shader = (fragment_shader_source
+                           if use_new_style_shader
+                           else fragment_shader_source_110)
+        if not self.program.addShaderFromSourceCode(QOpenGLShader.ShaderTypeBit.Vertex, vertex_shader):  # noqa: E501
             log = self.program.log()
             raise Exception("Vertex shader could not be added: {log} ({vertexShader})")
-        if not self.program.addShaderFromSourceCode(QOpenGLShader.Fragment, fragment_shader):
+        if not self.program.addShaderFromSourceCode(QOpenGLShader.ShaderTypeBit.Fragment, fragment_shader):  # noqa: E501
             log = self.program.log()
             raise Exception(f"Fragment shader could not be added: {log} ({fragment_shader})")
         if not self.program.link():
@@ -133,9 +138,9 @@ class RenderWindow(QWindow):
         self.vbo.write(vertices_size, VoidPtr(self._colors_data), colors_size)
         self.vbo.release()
 
-        vao_binder = QOpenGLVertexArrayObject.Binder(self.vao)
-        if self.vao.isCreated():  # have VAO support, use it
-            self.setup_vertex_attribs()
+        with QOpenGLVertexArrayObject.Binder(self.vao):
+            if self.vao.isCreated():  # have VAO support, use it
+                self.setup_vertex_attribs()
 
     def setup_vertex_attribs(self):
         self.vbo.bind()
@@ -249,11 +254,11 @@ if __name__ == '__main__':
                         help='Use Desktop OpenGL')
     options = parser.parse_args()
     if options.gles:
-        QCoreApplication.setAttribute(Qt.AA_UseOpenGLES)
+        QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_UseOpenGLES)
     elif options.software:
-        QCoreApplication.setAttribute(Qt.AA_UseSoftwareOpenGL)
+        QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_UseSoftwareOpenGL)
     elif options.desktop:
-        QCoreApplication.setAttribute(Qt.AA_UseDesktopOpenGL)
+        QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_UseDesktopOpenGL)
 
     app = QApplication(sys.argv)
     main_window = MainWindow()

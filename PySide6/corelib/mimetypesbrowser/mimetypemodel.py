@@ -1,18 +1,17 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-
-from typing import List
+from __future__ import annotations
 
 from PySide6.QtCore import QMimeDatabase, QMimeType, QModelIndex, QObject, Qt, qWarning
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 
-mimeTypeRole = Qt.UserRole + 1
-iconQueriedRole = Qt.UserRole + 2
+mimeTypeRole = Qt.ItemDataRole.UserRole + 1
+iconQueriedRole = Qt.ItemDataRole.UserRole + 2
 
 
 def createRow(t: QMimeType):
     name_item = QStandardItem(t.name())
-    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+    flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
     name_item.setData(t, mimeTypeRole)
     name_item.setData(False, iconQueriedRole)
     name_item.setFlags(flags)
@@ -29,7 +28,7 @@ class MimeTypeModel(QStandardItemModel):
 
     def populate(self):
         mime_database = QMimeDatabase()
-        all_types: List[QMimeType] = mime_database.allMimeTypes()
+        all_types: list[QMimeType] = mime_database.allMimeTypes()
 
         # Move top level types to rear end of list, sort this partition,
         # create top level items and truncate the list.

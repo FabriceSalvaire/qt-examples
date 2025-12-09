@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the linechart example from Qt v6.x"""
 
@@ -55,7 +56,7 @@ class TestChart(QMainWindow):
         self.chart.legend().setAlignment(Qt.AlignBottom)
 
         self._chart_view = QChartView(self.chart)
-        self._chart_view.setRenderHint(QPainter.Antialiasing)
+        self._chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         self.setCentralWidget(self._chart_view)
 

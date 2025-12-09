@@ -1,17 +1,17 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the network/fortuneclient example from Qt v5.x"""
 
 import sys
 
-from PySide6.QtCore import QDataStream, QTimer, Qt
+from PySide6.QtCore import QDataStream, QTimer
 from PySide6.QtGui import QIntValidator
 from PySide6.QtNetwork import QAbstractSocket, QTcpSocket
 from PySide6.QtWidgets import (QApplication, QDialog, QDialogButtonBox, QGridLayout,
-                               QLabel, QLineEdit, QMessageBox, QPushButton,
-                               QVBoxLayout, QWidget)
+                               QLabel, QLineEdit, QMessageBox, QPushButton)
 
 
 class Client(QDialog):
@@ -32,7 +32,7 @@ class Client(QDialog):
         port_label.setBuddy(self._port_line_edit)
 
         self._status_label = QLabel("This examples requires that you run "
-                "the Fortune Server example as well.")
+                                    "the Fortune Server example as well.")
 
         self._get_fortune_button = QPushButton("Get Fortune")
         self._get_fortune_button.setDefault(True)
@@ -41,9 +41,8 @@ class Client(QDialog):
         quit_button = QPushButton("Quit")
 
         button_box = QDialogButtonBox()
-        button_box.addButton(self._get_fortune_button,
-                QDialogButtonBox.ActionRole)
-        button_box.addButton(quit_button, QDialogButtonBox.RejectRole)
+        button_box.addButton(self._get_fortune_button, QDialogButtonBox.ButtonRole.ActionRole)
+        button_box.addButton(quit_button, QDialogButtonBox.ButtonRole.RejectRole)
 
         self._tcp_socket = QTcpSocket(self)
 
@@ -70,11 +69,11 @@ class Client(QDialog):
         self._block_size = 0
         self._tcp_socket.abort()
         self._tcp_socket.connectToHost(self._host_line_edit.text(),
-                int(self._port_line_edit.text()))
+                                       int(self._port_line_edit.text()))
 
     def read_fortune(self):
         instr = QDataStream(self._tcp_socket)
-        instr.setVersion(QDataStream.Qt_4_0)
+        instr.setVersion(QDataStream.Version.Qt_4_0)
 
         if self._block_size == 0:
             if self._tcp_socket.bytesAvailable() < 2:
@@ -96,27 +95,27 @@ class Client(QDialog):
         self._get_fortune_button.setEnabled(True)
 
     def display_error(self, socketError):
-        if socketError == QAbstractSocket.RemoteHostClosedError:
+        if socketError == QAbstractSocket.SocketError.RemoteHostClosedError:
             pass
-        elif socketError == QAbstractSocket.HostNotFoundError:
+        elif socketError == QAbstractSocket.SocketError.HostNotFoundError:
             QMessageBox.information(self, "Fortune Client",
-                    "The host was not found. Please check the host name and "
-                    "port settings.")
-        elif socketError == QAbstractSocket.ConnectionRefusedError:
+                                    "The host was not found. Please check the host name and "
+                                    "port settings.")
+        elif socketError == QAbstractSocket.SocketError.ConnectionRefusedError:
             QMessageBox.information(self, "Fortune Client",
-                    "The connection was refused by the peer. Make sure the "
-                    "fortune server is running, and check that the host name "
-                    "and port settings are correct.")
+                                    "The connection was refused by the peer. Make sure the "
+                                    "fortune server is running, and check that the host name "
+                                    "and port settings are correct.")
         else:
             reason = self._tcp_socket.errorString()
             QMessageBox.information(self, "Fortune Client",
-                    f"The following error occurred: {reason}.")
+                                    f"The following error occurred: {reason}.")
 
         self._get_fortune_button.setEnabled(True)
 
     def enable_get_fortune_button(self):
-        self._get_fortune_button.setEnabled(bool(self._host_line_edit.text() and
-                self._port_line_edit.text()))
+        self._get_fortune_button.setEnabled(bool(self._host_line_edit.text()
+                                                 and self._port_line_edit.text()))
 
 
 if __name__ == '__main__':

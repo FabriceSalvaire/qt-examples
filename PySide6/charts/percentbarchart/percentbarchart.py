@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the Percent Bar Chart example from Qt v5.x"""
 
@@ -21,11 +22,11 @@ class MainWindow(QMainWindow):
         set3 = QBarSet("Mary")
         set4 = QBarSet("Samantha")
 
-        set0.append([1, 2, 3,  4, 5, 6])
-        set1.append([5, 0, 0,  4, 0, 7])
+        set0.append([1, 2, 3, 4, 5, 6])
+        set1.append([5, 0, 0, 4, 0, 7])
         set2.append([3, 5, 8, 13, 8, 5])
-        set3.append([5, 6, 7,  3, 4, 5])
-        set4.append([9, 7, 5,  3, 1, 2])
+        set3.append([5, 6, 7, 3, 4, 5])
+        set4.append([9, 7, 5, 3, 1, 2])
 
         series = QPercentBarSeries()
         series.append(set0)
@@ -50,7 +51,7 @@ class MainWindow(QMainWindow):
         chart.legend().setAlignment(Qt.AlignBottom)
 
         chart_view = QChartView(chart)
-        chart_view.setRenderHint(QPainter.Antialiasing)
+        chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         self.setCentralWidget(chart_view)
 

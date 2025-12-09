@@ -1,19 +1,22 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
-"""PySide6 port of the widgets/mainwindows/dockwidgets example from Qt v5.x, originating from PyQt"""
+"""PySide6 port of the widgets/mainwindows/dockwidgets example from Qt v5.x,
+   originating from PyQt"""
 
 import sys
 
 from PySide6.QtCore import QDate, QFile, Qt, QTextStream
 from PySide6.QtGui import (QAction, QFont, QIcon, QKeySequence,
-        QTextCharFormat, QTextCursor, QTextTableFormat)
+                           QTextCharFormat, QTextCursor, QTextTableFormat)
 from PySide6.QtPrintSupport import QPrintDialog, QPrinter
 from PySide6.QtWidgets import (QApplication, QDialog, QDockWidget,
-        QFileDialog, QListWidget, QMainWindow, QMessageBox, QTextEdit)
+                               QFileDialog, QListWidget, QMainWindow,
+                               QMessageBox, QTextEdit)
 
-import dockwidgets_rc
+import dockwidgets_rc  # noqa: F401
 
 
 class MainWindow(QMainWindow):
@@ -37,7 +40,7 @@ class MainWindow(QMainWindow):
         self._text_edit.clear()
 
         cursor = self._text_edit.textCursor()
-        cursor.movePosition(QTextCursor.Start)
+        cursor.movePosition(QTextCursor.MoveOperation.Start)
         top_frame = cursor.currentFrame()
         top_frame_format = top_frame.frameFormat()
         top_frame_format.setPadding(16)
@@ -45,14 +48,14 @@ class MainWindow(QMainWindow):
 
         text_format = QTextCharFormat()
         bold_format = QTextCharFormat()
-        bold_format.setFontWeight(QFont.Bold)
+        bold_format.setFontWeight(QFont.Weight.Bold)
         italic_format = QTextCharFormat()
         italic_format.setFontItalic(True)
 
         table_format = QTextTableFormat()
         table_format.setBorder(1)
         table_format.setCellPadding(16)
-        table_format.setAlignment(Qt.AlignRight)
+        table_format.setAlignment(Qt.AlignmentFlag.AlignRight)
         cursor.insertTable(1, 1, table_format)
         cursor.insertText("The Firm", bold_format)
         cursor.insertBlock()
@@ -62,8 +65,7 @@ class MainWindow(QMainWindow):
         cursor.insertBlock()
         cursor.insertText("Some Country")
         cursor.setPosition(top_frame.lastPosition())
-        cursor.insertText(QDate.currentDate().toString("d MMMM yyyy"),
-                text_format)
+        cursor.insertText(QDate.currentDate().toString("d MMMM yyyy"), text_format)
         cursor.insertBlock()
         cursor.insertBlock()
         cursor.insertText("Dear ", text_format)
@@ -83,7 +85,7 @@ class MainWindow(QMainWindow):
         printer = QPrinter()
 
         dlg = QPrintDialog(printer, self)
-        if dlg.exec() != QDialog.Accepted:
+        if dlg.exec() != QDialog.DialogCode.Accepted:
             return
 
         document.print_(printer)
@@ -93,21 +95,21 @@ class MainWindow(QMainWindow):
     def save(self):
         dialog = QFileDialog(self, "Choose a file name")
         dialog.setMimeTypeFilters(['text/html'])
-        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         dialog.setDefaultSuffix('html')
-        if dialog.exec() != QDialog.Accepted:
+        if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         filename = dialog.selectedFiles()[0]
         file = QFile(filename)
-        if not file.open(QFile.WriteOnly | QFile.Text):
+        if not file.open(QFile.OpenModeFlag.WriteOnly | QFile.OpenModeFlag.Text):
             reason = file.errorString()
             QMessageBox.warning(self, "Dock Widgets",
-                    f"Cannot write file {filename}:\n{reason}.")
+                                f"Cannot write file {filename}:\n{reason}.")
             return
 
         out = QTextStream(file)
-        with QApplication.setOverrideCursor(Qt.WaitCursor):
+        with QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor):
             out << self._text_edit.toHtml()
 
         self.statusBar().showMessage(f"Saved '{filename}'", 2000)
@@ -143,8 +145,8 @@ class MainWindow(QMainWindow):
         if cursor.isNull():
             return
         cursor.beginEditBlock()
-        cursor.movePosition(QTextCursor.PreviousBlock, QTextCursor.MoveAnchor,
-                2)
+        cursor.movePosition(QTextCursor.MoveOperation.PreviousBlock,
+                            QTextCursor.MoveMode.MoveAnchor, 2)
         cursor.insertBlock()
         cursor.insertText(paragraph)
         cursor.insertBlock()
@@ -152,43 +154,44 @@ class MainWindow(QMainWindow):
 
     def about(self):
         QMessageBox.about(self, "About Dock Widgets",
-                "The <b>Dock Widgets</b> example demonstrates how to use "
-                "Qt's dock widgets. You can enter your own text, click a "
-                "customer to add a customer name and address, and click "
-                "standard paragraphs to add them.")
+                          "The <b>Dock Widgets</b> example demonstrates how to use "
+                          "Qt's dock widgets. You can enter your own text, click a "
+                          "customer to add a customer name and address, and click "
+                          "standard paragraphs to add them.")
 
     def create_actions(self):
         icon = QIcon.fromTheme('document-new', QIcon(':/images/new.png'))
         self._new_letter_act = QAction(icon, "&New Letter",
-                self, shortcut=QKeySequence.New,
-                statusTip="Create a new form letter", triggered=self.new_letter)
+                                       self, shortcut=QKeySequence.StandardKey.New,
+                                       statusTip="Create a new form letter",
+                                       triggered=self.new_letter)
 
         icon = QIcon.fromTheme('document-save', QIcon(':/images/save.png'))
         self._save_act = QAction(icon, "&Save...", self,
-                shortcut=QKeySequence.Save,
-                statusTip="Save the current form letter", triggered=self.save)
+                                 shortcut=QKeySequence.StandardKey.Save,
+                                 statusTip="Save the current form letter", triggered=self.save)
 
         icon = QIcon.fromTheme('document-print', QIcon(':/images/print.png'))
         self._print_act = QAction(icon, "&Print...", self,
-                shortcut=QKeySequence.Print,
-                statusTip="Print the current form letter",
-                triggered=self.print_)
+                                  shortcut=QKeySequence.StandardKey.Print,
+                                  statusTip="Print the current form letter",
+                                  triggered=self.print_)
 
         icon = QIcon.fromTheme('edit-undo', QIcon(':/images/undo.png'))
         self._undo_act = QAction(icon, "&Undo", self,
-                shortcut=QKeySequence.Undo,
-                statusTip="Undo the last editing action", triggered=self.undo)
+                                 shortcut=QKeySequence.StandardKey.Undo,
+                                 statusTip="Undo the last editing action", triggered=self.undo)
 
         self._quit_act = QAction("&Quit", self, shortcut="Ctrl+Q",
-                statusTip="Quit the application", triggered=self.close)
+                                 statusTip="Quit the application", triggered=self.close)
 
         self._about_act = QAction("&About", self,
-                statusTip="Show the application's About box",
-                triggered=self.about)
+                                  statusTip="Show the application's About box",
+                                  triggered=self.about)
 
         self._about_qt_act = QAction("About &Qt", self,
-                statusTip="Show the Qt library's About box",
-                triggered=QApplication.instance().aboutQt)
+                                     statusTip="Show the Qt library's About box",
+                                     triggered=QApplication.instance().aboutQt)
 
     def create_menus(self):
         self._file_menu = self.menuBar().addMenu("&File")
@@ -223,7 +226,8 @@ class MainWindow(QMainWindow):
 
     def create_dock_windows(self):
         dock = QDockWidget("Customers", self)
-        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        dock.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea
+                             | Qt.DockWidgetArea.RightDockWidgetArea)
         self._customer_list = QListWidget(dock)
         self._customer_list.addItems((
             "John Doe, Harmony Enterprises, 12 Lakeside, Ambleton",
@@ -233,7 +237,7 @@ class MainWindow(QMainWindow):
             "Sol Harvey, Chicos Coffee, 53 New Springs, Eccleston",
             "Sally Hobart, Tiroli Tea, 67 Long River, Fedula"))
         dock.setWidget(self._customer_list)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
         self._view_menu.addAction(dock.toggleViewAction())
 
         dock = QDockWidget("Paragraphs", self)
@@ -241,23 +245,23 @@ class MainWindow(QMainWindow):
         self._paragraphs_list.addItems((
             "Thank you for your payment which we have received today.",
             "Your order has been dispatched and should be with you within "
-                "28 days.",
+            "28 days.",
             "We have dispatched those items that were in stock. The rest of "
-                "your order will be dispatched once all the remaining items "
-                "have arrived at our warehouse. No additional shipping "
-                "charges will be made.",
+            "your order will be dispatched once all the remaining items "
+            "have arrived at our warehouse. No additional shipping "
+            "charges will be made.",
             "You made a small overpayment (less than $5) which we will keep "
-                "on account for you, or return at your request.",
+            "on account for you, or return at your request.",
             "You made a small underpayment (less than $1), but we have sent "
-                "your order anyway. We'll add this underpayment to your next "
-                "bill.",
+            "your order anyway. We'll add this underpayment to your next "
+            "bill.",
             "Unfortunately you did not send enough money. Please remit an "
-                "additional $. Your order will be dispatched as soon as the "
-                "complete amount has been received.",
+            "additional $. Your order will be dispatched as soon as the "
+            "complete amount has been received.",
             "You made an overpayment (more than $5). Do you wish to buy more "
-                "items, or should we return the excess to you?"))
+            "items, or should we return the excess to you?"))
         dock.setWidget(self._paragraphs_list)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
         self._view_menu.addAction(dock.toggleViewAction())
 
         self._customer_list.currentTextChanged.connect(self.insert_customer)

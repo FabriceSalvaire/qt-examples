@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 from PySide6.QtCore import (QDate, QDateTime, QRegularExpression,
@@ -46,11 +47,11 @@ class Window(QWidget):
 
         self._filter_syntax_combo_box = QComboBox()
         self._filter_syntax_combo_box.addItem("Regular expression",
-                                          REGULAR_EXPRESSION)
+                                              REGULAR_EXPRESSION)
         self._filter_syntax_combo_box.addItem("Wildcard",
-                                          WILDCARD)
+                                              WILDCARD)
         self._filter_syntax_combo_box.addItem("Fixed string",
-                                          FIXED_STRING)
+                                              FIXED_STRING)
         self._filter_syntax_label = QLabel("Filter &syntax:")
         self._filter_syntax_label.setBuddy(self._filter_syntax_combo_box)
 
@@ -91,7 +92,7 @@ class Window(QWidget):
         self.setWindowTitle("Basic Sort/Filter Model")
         self.resize(500, 450)
 
-        self._proxy_view.sortByColumn(1, Qt.AscendingOrder)
+        self._proxy_view.sortByColumn(1, Qt.SortOrder.AscendingOrder)
         self._filter_column_combo_box.setCurrentIndex(1)
 
         self._filter_pattern_line_edit.setText("Andy|Grace")
@@ -114,7 +115,7 @@ class Window(QWidget):
         reg_exp = QRegularExpression(pattern)
         if not self._filter_case_sensitivity_check_box.isChecked():
             options = reg_exp.patternOptions()
-            options |= QRegularExpression.CaseInsensitiveOption
+            options |= QRegularExpression.PatternOption.CaseInsensitiveOption
             reg_exp.setPatternOptions(options)
         self._proxy_model.setFilterRegularExpression(reg_exp)
 
@@ -125,9 +126,9 @@ class Window(QWidget):
     @Slot()
     def sort_changed(self):
         if self._sort_case_sensitivity_check_box.isChecked():
-            case_sensitivity = Qt.CaseSensitive
+            case_sensitivity = Qt.CaseSensitivity.CaseSensitive
         else:
-            case_sensitivity = Qt.CaseInsensitive
+            case_sensitivity = Qt.CaseSensitivity.CaseInsensitive
 
         self._proxy_model.setSortCaseSensitivity(case_sensitivity)
 
@@ -142,30 +143,30 @@ def add_mail(model, subject, sender, date):
 def create_mail_model(parent):
     model = QStandardItemModel(0, 3, parent)
 
-    model.setHeaderData(0, Qt.Horizontal, "Subject")
-    model.setHeaderData(1, Qt.Horizontal, "Sender")
-    model.setHeaderData(2, Qt.Horizontal, "Date")
+    model.setHeaderData(0, Qt.Orientation.Horizontal, "Subject")
+    model.setHeaderData(1, Qt.Orientation.Horizontal, "Sender")
+    model.setHeaderData(2, Qt.Orientation.Horizontal, "Date")
 
     add_mail(model, "Happy New Year!", "Grace K. <grace@software-inc.com>",
-            QDateTime(QDate(2006, 12, 31), QTime(17, 3)))
+             QDateTime(QDate(2006, 12, 31), QTime(17, 3)))
     add_mail(model, "Radically new concept", "Grace K. <grace@software-inc.com>",
-            QDateTime(QDate(2006, 12, 22), QTime(9, 44)))
+             QDateTime(QDate(2006, 12, 22), QTime(9, 44)))
     add_mail(model, "Accounts", "pascale@nospam.com",
-            QDateTime(QDate(2006, 12, 31), QTime(12, 50)))
+             QDateTime(QDate(2006, 12, 31), QTime(12, 50)))
     add_mail(model, "Expenses", "Joe Bloggs <joe@bloggs.com>",
-            QDateTime(QDate(2006, 12, 25), QTime(11, 39)))
+             QDateTime(QDate(2006, 12, 25), QTime(11, 39)))
     add_mail(model, "Re: Expenses", "Andy <andy@nospam.com>",
-            QDateTime(QDate(2007, 1, 2), QTime(16, 5)))
+             QDateTime(QDate(2007, 1, 2), QTime(16, 5)))
     add_mail(model, "Re: Accounts", "Joe Bloggs <joe@bloggs.com>",
-            QDateTime(QDate(2007, 1, 3), QTime(14, 18)))
+             QDateTime(QDate(2007, 1, 3), QTime(14, 18)))
     add_mail(model, "Re: Accounts", "Andy <andy@nospam.com>",
-            QDateTime(QDate(2007, 1, 3), QTime(14, 26)))
+             QDateTime(QDate(2007, 1, 3), QTime(14, 26)))
     add_mail(model, "Sports", "Linda Smith <linda.smith@nospam.com>",
-            QDateTime(QDate(2007, 1, 5), QTime(11, 33)))
+             QDateTime(QDate(2007, 1, 5), QTime(11, 33)))
     add_mail(model, "AW: Sports", "Rolf Newschweinstein <rolfn@nospam.com>",
-            QDateTime(QDate(2007, 1, 5), QTime(12, 0)))
+             QDateTime(QDate(2007, 1, 5), QTime(12, 0)))
     add_mail(model, "RE: Sports", "Petra Schmidt <petras@nospam.com>",
-            QDateTime(QDate(2007, 1, 5), QTime(12, 1)))
+             QDateTime(QDate(2007, 1, 5), QTime(12, 1)))
 
     return model
 

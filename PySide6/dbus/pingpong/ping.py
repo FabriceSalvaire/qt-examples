@@ -1,11 +1,12 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the QtDBus pingpong example from Qt v6.x (ping client)"""
 
 import sys
-from PySide6.QtCore import QCoreApplication, QObject, Slot
-from PySide6.QtDBus import QDBusConnection,  QDBusInterface, QDBusReply
+from PySide6.QtCore import QCoreApplication
+from PySide6.QtDBus import QDBusConnection, QDBusInterface, QDBusReply
 
 
 SERVICE_NAME = 'org.example.QtDBus.PingExample'
@@ -36,4 +37,3 @@ if __name__ == "__main__":
     value = reply.value()
     print(f'ping: Reply was: {value}')
     sys.exit(0)
-

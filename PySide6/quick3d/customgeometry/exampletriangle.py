@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import numpy as np
 from PySide6.QtCore import Property, Signal
@@ -7,7 +8,7 @@ from PySide6.QtGui import QVector3D
 from PySide6.QtQml import QmlElement
 from PySide6.QtQuick3D import QQuick3DGeometry
 
-QML_IMPORT_NAME = "ExampleTriangleGeometry"
+QML_IMPORT_NAME = "CustomGeometryExample"
 QML_IMPORT_MAJOR_VERSION = 1
 
 
@@ -170,14 +171,15 @@ class ExampleTriangleGeometry(QQuick3DGeometry):
         self.setBounds(QVector3D(-1.0, -1.0, 0.0), QVector3D(+1.0, +1.0, 0.0))
         self.setPrimitiveType(QQuick3DGeometry.PrimitiveType.Triangles)
         self.addAttribute(
-            QQuick3DGeometry.Attribute.PositionSemantic, 0, QQuick3DGeometry.Attribute.F32Type
+            QQuick3DGeometry.Attribute.Semantic.PositionSemantic, 0,
+            QQuick3DGeometry.Attribute.ComponentType.F32Type
         )
 
         if self._hasNormals:
             self.addAttribute(
-                QQuick3DGeometry.Attribute.NormalSemantic,
+                QQuick3DGeometry.Attribute.Semantic.NormalSemantic,
                 3 * FLOAT_SIZE,
-                QQuick3DGeometry.Attribute.F32Type,
+                QQuick3DGeometry.Attribute.ComponentType.F32Type,
             )
 
         if self._hasUV:

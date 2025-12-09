@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the Chart Themes example from Qt v5.x"""
 
@@ -7,7 +8,7 @@ import sys
 from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QColor, QPainter, QPalette
 from PySide6.QtWidgets import (QApplication, QMainWindow, QSizePolicy,
-    QWidget)
+                               QWidget)
 from PySide6.QtCharts import (QAreaSeries, QBarSet, QChart, QChartView,
                               QLineSeries, QPieSeries, QScatterSeries,
                               QSplineSeries, QStackedBarSeries)
@@ -27,7 +28,7 @@ class ThemeWidget(QWidget):
         self.value_max = 10
         self.value_count = 7
         self.data_table = self.generate_random_data(self.list_count,
-            self.value_max, self.value_count)
+                                                    self.value_max, self.value_count)
 
         self.ui.setupUi(self)
         self.populate_themebox()
@@ -41,8 +42,7 @@ class ThemeWidget(QWidget):
 
         # Pie Chart
         chart_view = QChartView(self.create_pie_chart())
-        chart_view.setSizePolicy(QSizePolicy.Ignored,
-            QSizePolicy.Ignored)
+        chart_view.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         self.ui.gridLayout.addWidget(chart_view, 1, 1)
         self.charts.append(chart_view)
 
@@ -70,10 +70,10 @@ class ThemeWidget(QWidget):
         self.ui.antialiasCheckBox.setChecked(True)
 
         # Set the colors from the light theme as default ones
-        pal = qApp.palette()
+        pal = qApp.palette()  # noqa: F821
         pal.setColor(QPalette.Window, QColor(0xf0f0f0))
         pal.setColor(QPalette.WindowText, QColor(0x404044))
-        qApp.setPalette(pal)
+        qApp.setPalette(pal)  # noqa: F821
 
         self.update_ui()
 
@@ -145,7 +145,7 @@ class ThemeWidget(QWidget):
             lower_series = upper_series
 
         chart.createDefaultAxes()
-        axis_x = chart.axes(Qt.Horizontal)[0]
+        axis_x = chart.axes(Qt.Orientation.Horizontal)[0]
         axis_x.setRange(0, self.value_count - 1)
         axis_y = chart.axes(Qt.Vertical)[0]
         axis_y.setRange(0, self.value_max)
@@ -188,7 +188,7 @@ class ThemeWidget(QWidget):
             chart.addSeries(series)
 
         chart.createDefaultAxes()
-        axis_x = chart.axes(Qt.Horizontal)[0]
+        axis_x = chart.axes(Qt.Orientation.Horizontal)[0]
         axis_x.setRange(0, self.value_max)
         axis_y = chart.axes(Qt.Vertical)[0]
         axis_y.setRange(0, self.value_count)
@@ -227,7 +227,7 @@ class ThemeWidget(QWidget):
             chart.addSeries(series)
 
         chart.createDefaultAxes()
-        axis_x = chart.axes(Qt.Horizontal)[0]
+        axis_x = chart.axes(Qt.Orientation.Horizontal)[0]
         axis_x.setRange(0, self.value_max)
         axis_y = chart.axes(Qt.Vertical)[0]
         axis_y.setRange(0, self.value_count)
@@ -248,7 +248,7 @@ class ThemeWidget(QWidget):
             chart.addSeries(series)
 
         chart.createDefaultAxes()
-        axis_x = chart.axes(Qt.Horizontal)[0]
+        axis_x = chart.axes(Qt.Orientation.Horizontal)[0]
         axis_x.setRange(0, self.value_max)
         axis_y = chart.axes(Qt.Vertical)[0]
         axis_y.setRange(0, self.value_count)
@@ -271,26 +271,7 @@ class ThemeWidget(QWidget):
             chart_theme = self.charts[0].chart().theme()
             if chart_theme != theme:
                 for chart_view in self.charts:
-                    if theme == 0:
-                        theme_name = QChart.ChartThemeLight
-                    elif theme == 1:
-                        theme_name = QChart.ChartThemeBlueCerulean
-                    elif theme == 2:
-                        theme_name = QChart.ChartThemeDark
-                    elif theme == 3:
-                        theme_name = QChart.ChartThemeBrownSand
-                    elif theme == 4:
-                        theme_name = QChart.ChartThemeBlueNcs
-                    elif theme == 5:
-                        theme_name = QChart.ChartThemeHighContrast
-                    elif theme == 6:
-                        theme_name = QChart.ChartThemeBlueIcy
-                    elif theme == 7:
-                        theme_name = QChart.ChartThemeQt
-                    else:
-                        theme_name = QChart.ChartThemeLight
-
-                    chart_view.chart().setTheme(theme_name)
+                    chart_view.chart().setTheme(theme)
 
                 # Set palette colors based on selected theme
                 if theme == QChart.ChartThemeLight:
@@ -313,27 +294,17 @@ class ThemeWidget(QWidget):
         # Update antialiasing
         checked = self.ui.antialiasCheckBox.isChecked()
         for chart in self.charts:
-            chart.setRenderHint(QPainter.Antialiasing, checked)
+            chart.setRenderHint(QPainter.RenderHint.Antialiasing, checked)
 
         # Update animation options
         idx = self.ui.animatedComboBox.currentIndex()
         options = self.ui.animatedComboBox.itemData(idx)
 
         if len(self.charts):
-            chart = self.charts[0].chart()
-            animation_options = chart.animationOptions()
+            animation_options = self.charts[0].chart().animationOptions()
             if animation_options != options:
                 for chart_view in self.charts:
-                    options_name = QChart.NoAnimation
-                    if options == 0:
-                        options_name = QChart.NoAnimation
-                    elif options == 1:
-                        options_name = QChart.GridAxisAnimations
-                    elif options == 2:
-                        options_name = QChart.SeriesAnimations
-                    elif options == 3:
-                        options_name = QChart.AllAnimations
-                    chart_view.chart().setAnimationOptions(options_name)
+                    chart_view.chart().setAnimationOptions(options)
 
         # Update legend alignment
         idx = self.ui.legendComboBox.currentIndex()

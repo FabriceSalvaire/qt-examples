@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 # PySide6 tutorial 3
 
@@ -17,7 +18,7 @@ if __name__ == '__main__':
     window.resize(200, 120)
 
     quit = QPushButton("Quit", window)
-    quit.setFont(QFont("Times", 18, QFont.Bold))
+    quit.setFont(QFont("Times", 18, QFont.Weight.Bold))
     quit.setGeometry(10, 40, 180, 40)
     quit.clicked.connect(app.quit)
 

@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import random
 
@@ -10,7 +11,7 @@ from PySide6.QtGui import QPen
 
 class Chart(QChart):
     def __init__(self, parent=None):
-        super().__init__(QChart.ChartTypeCartesian, parent, Qt.WindowFlags())
+        super().__init__(QChart.ChartTypeCartesian, parent, Qt.WindowFlags(0))
         self._timer = QTimer()
         self._series = QSplineSeries(self)
         self._titles = []

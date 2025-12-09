@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/layouts/basiclayout example from Qt v5.x"""
 
@@ -27,9 +28,10 @@ class Dialog(QDialog):
 
         big_editor = QTextEdit()
         big_editor.setPlainText("This widget takes up all the remaining space "
-                "in the top-level layout.")
+                                "in the top-level layout.")
 
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok
+                                      | QDialogButtonBox.StandardButton.Cancel)
 
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
@@ -75,8 +77,7 @@ class Dialog(QDialog):
             layout.addWidget(line_edit, i + 1, 1)
 
         self._small_editor = QTextEdit()
-        self._small_editor.setPlainText("This widget takes up about two thirds "
-                "of the grid layout.")
+        self._small_editor.setPlainText("This widget takes up about two thirds of the grid layout.")
 
         layout.addWidget(self._small_editor, 0, 2, 4, 1)
 

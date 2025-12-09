@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/layouts/dynamiclayouts example from Qt v5.x"""
 
@@ -25,7 +26,7 @@ class Dialog(QDialog):
         main_layout.addWidget(self._rotable_group_box, 0, 0)
         main_layout.addWidget(self._options_group_box, 1, 0)
         main_layout.addWidget(self._button_box, 2, 0)
-        main_layout.setSizeConstraint(QLayout.SetMinimumSize)
+        main_layout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
 
         self._main_layout = main_layout
         self.setLayout(self._main_layout)
@@ -63,7 +64,7 @@ class Dialog(QDialog):
         self._button_box.setOrientation(orientation)
         new_size_hint = self._button_box.sizeHint() + QSize(spacing, spacing)
 
-        if orientation == Qt.Horizontal:
+        if orientation == Qt.Orientation.Horizontal:
             self._main_layout.addWidget(self._button_box, 2, 0)
             self.resize(self.size() + QSize(-old_size_hint.width(), new_size_hint.height()))
         else:
@@ -74,8 +75,8 @@ class Dialog(QDialog):
 
     def show_help(self):
         QMessageBox.information(self, "Dynamic Layouts Help",
-                            "This example shows how to change layouts "
-                            "dynamically.")
+                                "This example shows how to change layouts "
+                                "dynamically.")
 
     def create_rotable_group_box(self):
         self._rotable_group_box = QGroupBox("Rotable Widgets")
@@ -100,9 +101,10 @@ class Dialog(QDialog):
         buttons_orientation_label = QLabel("Orientation of buttons:")
 
         buttons_orientation_combo_box = QComboBox()
-        buttons_orientation_combo_box.addItem("Horizontal", Qt.Horizontal)
-        buttons_orientation_combo_box.addItem("Vertical", Qt.Vertical)
-        buttons_orientation_combo_box.currentIndexChanged[int].connect(self.buttons_orientation_changed)
+        buttons_orientation_combo_box.addItem("Horizontal", Qt.Orientation.Horizontal)
+        buttons_orientation_combo_box.addItem("Vertical", Qt.Orientation.Vertical)
+        buttons_orientation_combo_box.currentIndexChanged[int].connect(
+            self.buttons_orientation_changed)
 
         self._buttons_orientation_combo_box = buttons_orientation_combo_box
 
@@ -115,9 +117,10 @@ class Dialog(QDialog):
     def create_button_box(self):
         self._button_box = QDialogButtonBox()
 
-        close_button = self._button_box.addButton(QDialogButtonBox.Close)
-        help_button = self._button_box.addButton(QDialogButtonBox.Help)
-        rotate_widgets_button = self._button_box.addButton("Rotate &Widgets", QDialogButtonBox.ActionRole)
+        close_button = self._button_box.addButton(QDialogButtonBox.StandardButton.Close)
+        help_button = self._button_box.addButton(QDialogButtonBox.StandardButton.Help)
+        rotate_widgets_button = self._button_box.addButton(
+            "Rotate &Widgets", QDialogButtonBox.ButtonRole.ActionRole)
 
         rotate_widgets_button.clicked.connect(self.rotate_widgets)
         close_button.clicked.connect(self.close)

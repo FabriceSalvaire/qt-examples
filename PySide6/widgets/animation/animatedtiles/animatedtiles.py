@@ -1,6 +1,7 @@
 # Copyright (C) 2010 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 import math
@@ -15,7 +16,7 @@ from PySide6.QtWidgets import (QApplication, QGraphicsItem, QGraphicsPixmapItem,
                                QGraphicsWidget, QStyle)
 from PySide6.QtStateMachine import QState, QStateMachine
 
-import animatedtiles_rc
+import animatedtiles_rc  # noqa: F401
 
 
 # Deriving from more than one wrapped class is not supported, so we use
@@ -25,7 +26,7 @@ class Pixmap(QObject):
         super().__init__()
 
         self.pixmap_item = QGraphicsPixmapItem(pix)
-        self.pixmap_item.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+        self.pixmap_item.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
     def set_pos(self, pos):
         self.pixmap_item.setPos(pos)
@@ -45,7 +46,7 @@ class Button(QGraphicsWidget):
         self._pix = pixmap
 
         self.setAcceptHoverEvents(True)
-        self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+        self.setCacheMode(QGraphicsItem.CacheMode.DeviceCoordinateCache)
 
     def boundingRect(self):
         return QRectF(-65, -65, 130, 130)
@@ -57,16 +58,16 @@ class Button(QGraphicsWidget):
         return path
 
     def paint(self, painter, option, widget):
-        down = option.state & QStyle.State_Sunken
+        down = option.state & QStyle.StateFlag.State_Sunken
         r = self.boundingRect()
 
         grad = QLinearGradient(r.topLeft(), r.bottomRight())
-        if option.state & QStyle.State_MouseOver:
-            color_0 = Qt.white
+        if option.state & QStyle.StateFlag.State_MouseOver:
+            color_0 = Qt.GlobalColor.white
         else:
-            color_0 = Qt.lightGray
+            color_0 = Qt.GlobalColor.lightGray
 
-        color_1 = Qt.darkGray
+        color_1 = Qt.GlobalColor.darkGray
 
         if down:
             color_0, color_1 = color_1, color_0
@@ -74,12 +75,12 @@ class Button(QGraphicsWidget):
         grad.setColorAt(0, color_0)
         grad.setColorAt(1, color_1)
 
-        painter.setPen(Qt.darkGray)
+        painter.setPen(Qt.GlobalColor.darkGray)
         painter.setBrush(grad)
         painter.drawEllipse(r)
 
-        color_0 = Qt.darkGray
-        color_1 = Qt.lightGray
+        color_0 = Qt.GlobalColor.darkGray
+        color_1 = Qt.GlobalColor.lightGray
 
         if down:
             color_0, color_1 = color_1, color_0
@@ -87,7 +88,7 @@ class Button(QGraphicsWidget):
         grad.setColorAt(0, color_0)
         grad.setColorAt(1, color_1)
 
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(grad)
 
         if down:
@@ -95,7 +96,7 @@ class Button(QGraphicsWidget):
 
         painter.drawEllipse(r.adjusted(5, 5, -5, -5))
         painter.drawPixmap(-self._pix.width() / 2, -self._pix.height() / 2,
-                self._pix)
+                           self._pix)
 
     def mousePressEvent(self, ev):
         self.pressed.emit()
@@ -108,7 +109,7 @@ class Button(QGraphicsWidget):
 class View(QGraphicsView):
     def resizeEvent(self, event):
         super(View, self).resizeEvent(event)
-        self.fitInView(self.sceneRect(), Qt.KeepAspectRatio)
+        self.fitInView(self.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
 
 if __name__ == '__main__':
@@ -123,7 +124,7 @@ if __name__ == '__main__':
     for i in range(64):
         item = Pixmap(kinetic_pix)
         item.pixmap_item.setOffset(-kinetic_pix.width() / 2,
-                -kinetic_pix.height() / 2)
+                                   -kinetic_pix.height() / 2)
         item.pixmap_item.setZValue(i)
         items.append(item)
         scene.addItem(item.pixmap_item)
@@ -161,23 +162,25 @@ if __name__ == '__main__':
     for i, item in enumerate(items):
         # Ellipse.
         ellipse_state.assignProperty(item, 'pos',
-                QPointF(math.cos((i / 63.0) * 6.28) * 250,
-                        math.sin((i / 63.0) * 6.28) * 250))
+                                     QPointF(math.cos((i / 63.0) * 6.28) * 250,
+                                             math.sin((i / 63.0) * 6.28) * 250))
 
         # Figure 8.
         figure_8state.assignProperty(item, 'pos',
-                QPointF(math.sin((i / 63.0) * 6.28) * 250,
-                        math.sin(((i * 2) / 63.0) * 6.28) * 250))
+                                     QPointF(math.sin((i / 63.0) * 6.28) * 250,
+                                             math.sin(((i * 2) / 63.0) * 6.28) * 250))
 
         # Random.
         random_state.assignProperty(item, 'pos',
-                QPointF(-250 + generator.bounded(0, 500),
-                               -250 + generator.bounded(0, 500)))
+                                    QPointF(-250 + generator.bounded(0, 500),
+                                            -250 + generator.bounded(0, 500)))
 
         # Tiled.
+        width = kinetic_pix.width()
+        height = kinetic_pix.height()
         tiled_state.assignProperty(item, 'pos',
-                QPointF(((i % 8) - 4) * kinetic_pix.width() + kinetic_pix.width() / 2,
-                        ((i // 8) - 4) * kinetic_pix.height() + kinetic_pix.height() / 2))
+                                   QPointF(((i % 8) - 4) * width + width / 2,
+                                           ((i // 8) - 4) * height + height / 2))
 
         # Centered.
         centered_state.assignProperty(item, 'pos', QPointF())
@@ -185,11 +188,11 @@ if __name__ == '__main__':
     # Ui.
     view = View(scene)
     view.setWindowTitle("Animated Tiles")
-    view.setViewportUpdateMode(QGraphicsView.BoundingRectViewportUpdate)
+    view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
     view.setBackgroundBrush(QBrush(bg_pix))
-    view.setCacheMode(QGraphicsView.CacheBackground)
-    view.setRenderHints(
-            QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+    view.setCacheMode(QGraphicsView.CacheModeFlag.CacheBackground)
+    view.setRenderHints(QPainter.RenderHint.Antialiasing
+                        | QPainter.RenderHint.SmoothPixmapTransform)
     view.show()
 
     states = QStateMachine()
@@ -201,7 +204,7 @@ if __name__ == '__main__':
     for i, item in enumerate(items):
         anim = QPropertyAnimation(item, b'pos')
         anim.setDuration(750 + i * 25)
-        anim.setEasingCurve(QEasingCurve.InOutBack)
+        anim.setEasingCurve(QEasingCurve.Type.InOutBack)
         group.addAnimation(anim)
 
     trans = root_state.addTransition(ellipse_button.pressed, ellipse_state)

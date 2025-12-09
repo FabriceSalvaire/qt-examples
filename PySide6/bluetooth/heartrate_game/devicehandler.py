@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import struct
 
@@ -10,7 +11,7 @@ from PySide6.QtBluetooth import (QLowEnergyCharacteristic,
                                  QLowEnergyDescriptor,
                                  QLowEnergyService,
                                  QBluetoothUuid)
-from PySide6.QtQml import QmlNamedElement, QmlUncreatable
+from PySide6.QtQml import QmlElement
 from PySide6.QtCore import (QByteArray, QDateTime, QRandomGenerator, QTimer,
                             Property, Signal, Slot, QEnum)
 
@@ -20,12 +21,11 @@ from heartrate_global import simulator
 
 # To be used on the @QmlElement decorator
 # (QML_IMPORT_MINOR_VERSION is optional)
-QML_IMPORT_NAME = "Shared"
+QML_IMPORT_NAME = "HeartRateGame"
 QML_IMPORT_MAJOR_VERSION = 1
 
 
-@QmlNamedElement("AddressType")
-@QmlUncreatable("Enum is not a type")
+@QmlElement
 class DeviceHandler(BluetoothBaseClass):
 
     @QEnum
@@ -58,68 +58,75 @@ class DeviceHandler(BluetoothBaseClass):
         self.m_stop = QDateTime()
 
         self.m_measurements = []
-        self.m_addressType = QLowEnergyController.PublicAddress
+        self.m_addressType = QLowEnergyController.RemoteAddressType.PublicAddress
 
         self.m_demoTimer = QTimer()
 
-        if simulator:
+        if simulator():
             self.m_demoTimer.setSingleShot(False)
             self.m_demoTimer.setInterval(2000)
             self.m_demoTimer.timeout.connect(self.updateDemoHR)
             self.m_demoTimer.start()
             self.updateDemoHR()
 
-    @Property(int)
     def addressType(self):
-        if self.m_addressType == QLowEnergyController.RandomAddress:
+        if self.m_addressType == QLowEnergyController.RemoteAddressType.RandomAddress:
             return DeviceHandler.AddressType.RANDOM_ADDRESS
         return DeviceHandler.AddressType.PUBLIC_ADDRESS
 
-    @addressType.setter
-    def addressType(self, type):
+    @Slot(int)
+    def setAddressType(self, type):
         if type == DeviceHandler.AddressType.PUBLIC_ADDRESS:
-            self.m_addressType = QLowEnergyController.PublicAddress
+            self.m_addressType = QLowEnergyController.RemoteAddressType.PublicAddress
         elif type == DeviceHandler.AddressType.RANDOM_ADDRESS:
-            self.m_addressType = QLowEnergyController.RandomAddress
+            self.m_addressType = QLowEnergyController.RemoteAddressType.RandomAddress
+
+    @Slot()
+    def resetAddressType(self):
+        self.m_addressType = QLowEnergyController.RemoteAddressType.PublicAddress
 
     @Slot(QLowEnergyController.Error)
     def controllerErrorOccurred(self, device):
         self.error = "Cannot connect to remote device."
+        self.icon = BluetoothBaseClass.IconType.IconError
 
     @Slot()
     def controllerConnected(self):
         self.info = "Controller connected. Search services..."
+        self.icon = BluetoothBaseClass.IconType.IconProgress
         self.m_control.discoverServices()
 
     @Slot()
     def controllerDisconnected(self):
         self.error = "LowEnergy controller disconnected"
+        self.icon = BluetoothBaseClass.IconType.IconError
 
     def setDevice(self, device):
         self.clearMessages()
         self.m_currentDevice = device
 
-        if simulator:
+        if simulator():
             self.info = "Demo device connected."
+            self.icon = BluetoothBaseClass.IconType.IconBluetooth
             return
 
         # Disconnect and delete old connection
         if self.m_control:
             self.m_control.disconnectFromDevice()
-            m_control = None
+            self.m_control = None
 
         # Create new controller and connect it if device available
         if self.m_currentDevice:
 
             # Make connections
 #! [Connect-Signals-1]
-            self.m_control = QLowEnergyController.createCentral(self.m_currentDevice.getDevice(), self)
+            self.m_control = QLowEnergyController.createCentral(self.m_currentDevice.device(), self)
 #! [Connect-Signals-1]
             self.m_control.setRemoteAddressType(self.m_addressType)
 #! [Connect-Signals-2]
 
-            m_control.serviceDiscovered.connect(self.serviceDiscovered)
-            m_control.discoveryFinished.connect(self.serviceScanDone)
+            self.m_control.serviceDiscovered.connect(self.serviceDiscovered)
+            self.m_control.discoveryFinished.connect(self.serviceScanDone)
 
             self.m_control.errorOccurred.connect(self.controllerErrorOccurred)
             self.m_control.connected.connect(self.controllerConnected)
@@ -152,6 +159,7 @@ class DeviceHandler(BluetoothBaseClass):
     def serviceDiscovered(self, gatt):
         if gatt == QBluetoothUuid(QBluetoothUuid.ServiceClassUuid.HeartRate):
             self.info = "Heart Rate service discovered. Waiting for service scan to be done..."
+            self.icon = BluetoothBaseClass.IconType.IconProgress
             self.m_foundHeartRateService = True
 
 #! [Filter HeartRate service 1]
@@ -159,6 +167,7 @@ class DeviceHandler(BluetoothBaseClass):
     @Slot()
     def serviceScanDone(self):
         self.info = "Service scan done."
+        self.icon = BluetoothBaseClass.IconType.IconProgress
 
         # Delete old service if available
         if self.m_service:
@@ -167,7 +176,8 @@ class DeviceHandler(BluetoothBaseClass):
 #! [Filter HeartRate service 2]
         # If heartRateService found, create new service
         if self.m_foundHeartRateService:
-            self.m_service = self.m_control.createServiceObject(QBluetoothUuid(QBluetoothUuid.ServiceClassUuid.HeartRate), self)
+            self.m_service = self.m_control.createServiceObject(
+                QBluetoothUuid(QBluetoothUuid.ServiceClassUuid.HeartRate), self)
 
         if self.m_service:
             self.m_service.stateChanged.connect(self.serviceStateChanged)
@@ -176,6 +186,8 @@ class DeviceHandler(BluetoothBaseClass):
             self.m_service.discoverDetails()
         else:
             self.error = "Heart Rate Service not found."
+            self.icon = BluetoothBaseClass.IconType.IconError
+
 #! [Filter HeartRate service 2]
 
 # Service functions
@@ -183,17 +195,22 @@ class DeviceHandler(BluetoothBaseClass):
     @Slot(QLowEnergyService.ServiceState)
     def serviceStateChanged(self, switch):
         if switch == QLowEnergyService.RemoteServiceDiscovering:
-            self.setInfo(tr("Discovering services..."))
+            self.info = "Discovering services..."
+            self.icon = BluetoothBaseClass.IconType.IconProgress
         elif switch == QLowEnergyService.RemoteServiceDiscovered:
-            self.setInfo(tr("Service discovered."))
-            hrChar = m_service.characteristic(QBluetoothUuid(QBluetoothUuid.CharacteristicType.HeartRateMeasurement))
+            self.info = "Service discovered."
+            self.icon = BluetoothBaseClass.IconType.IconBluetooth
+            hrChar = self.m_service.characteristic(
+                QBluetoothUuid(QBluetoothUuid.CharacteristicType.HeartRateMeasurement))
             if hrChar.isValid():
-                self.m_notificationDesc = hrChar.descriptor(QBluetoothUuid.DescriptorType.ClientCharacteristicConfiguration)
+                self.m_notificationDesc = hrChar.descriptor(
+                    QBluetoothUuid.DescriptorType.ClientCharacteristicConfiguration)
                 if self.m_notificationDesc.isValid():
-                    self.m_service.writeDescriptor(m_notificationDesc,
+                    self.m_service.writeDescriptor(self.m_notificationDesc,
                                                    QByteArray.fromHex(b"0100"))
             else:
                 self.error = "HR Data not found."
+                self.icon = BluetoothBaseClass.IconType.IconError
         self.aliveChanged.emit()
 #! [Find HRM characteristic]
 
@@ -209,9 +226,9 @@ class DeviceHandler(BluetoothBaseClass):
         # Heart Rate
         hrvalue = 0
         if flags & 0x1:  # HR 16 bit little endian? otherwise 8 bit
-            hrvalue = struct.unpack("<H", data[1:3])
+            hrvalue = struct.unpack("<H", data[1:3])[0]
         else:
-            hrvalue = struct.unpack("B", data[1:2])
+            hrvalue = struct.unpack("B", data[1:2])[0]
 
         self.addMeasurement(hrvalue)
 
@@ -234,7 +251,7 @@ class DeviceHandler(BluetoothBaseClass):
     @Slot(QLowEnergyCharacteristic, QByteArray)
     def confirmedDescriptorWrite(self, d, value):
         if (d.isValid() and d == self.m_notificationDesc
-            and value == QByteArray.fromHex(b"0000")):
+                and value == QByteArray.fromHex(b"0000")):
             # disabled notifications . assume disconnect intent
             self.m_control.disconnectFromDevice()
             self.m_service = None
@@ -245,7 +262,7 @@ class DeviceHandler(BluetoothBaseClass):
 
         # disable notifications
         if (self.m_notificationDesc.isValid() and self.m_service
-            and self.m_notificationDesc.value() == QByteArray.fromHex(b"0100")):
+                and self.m_notificationDesc.value() == QByteArray.fromHex(b"0100")):
             self.m_service.writeDescriptor(self.m_notificationDesc,
                                            QByteArray.fromHex(b"0000"))
         else:
@@ -259,7 +276,7 @@ class DeviceHandler(BluetoothBaseClass):
 
     @Property(bool, notify=aliveChanged)
     def alive(self):
-        if simulator:
+        if simulator():
             return True
         if self.m_service:
             return self.m_service.state() == QLowEnergyService.RemoteServiceDiscovered
@@ -302,6 +319,8 @@ class DeviceHandler(BluetoothBaseClass):
             self.m_sum += value
             self.m_avg = float(self.m_sum) / len(self.m_measurements)
             self.m_calories = ((-55.0969 + (0.6309 * self.m_avg) + (0.1988 * 94)
-                               + (0.2017 * 24)) / 4.184) * 60 * self.time / 3600
+                                + (0.2017 * 24)) / 4.184) * 60 * self.time / 3600
 
         self.statsChanged.emit()
+
+    addressType = Property(int, addressType, setAddressType, freset=resetAddressType)

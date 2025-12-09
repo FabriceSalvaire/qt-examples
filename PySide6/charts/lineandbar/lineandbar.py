@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the line/bar example from Qt v5.x"""
 
@@ -57,7 +58,7 @@ class TestChart(QMainWindow):
         self._axis_x.setRange("Jan", "Jun")
 
         self._axis_y = QValueAxis()
-        self.chart.addAxis(self._axis_x, Qt.AlignLeft)
+        self.chart.addAxis(self._axis_y, Qt.AlignLeft)
         self._line_series.attachAxis(self._axis_y)
         self._bar_series.attachAxis(self._axis_y)
         self._axis_y.setRange(0, 20)
@@ -66,7 +67,7 @@ class TestChart(QMainWindow):
         self.chart.legend().setAlignment(Qt.AlignBottom)
 
         self._chart_view = QChartView(self.chart)
-        self._chart_view.setRenderHint(QPainter.Antialiasing)
+        self._chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         self.setCentralWidget(self._chart_view)
 

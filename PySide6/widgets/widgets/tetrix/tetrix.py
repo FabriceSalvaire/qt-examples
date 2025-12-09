@@ -1,6 +1,7 @@
 # Copyright (C) 2013 Riverbank Computing Limited.
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/widgets/tetrix example from Qt v5.x"""
 
@@ -32,27 +33,27 @@ class TetrixWindow(QWidget):
         self.board = TetrixBoard()
 
         next_piece_label = QLabel()
-        next_piece_label.setFrameStyle(QFrame.Box | QFrame.Raised)
-        next_piece_label.setAlignment(Qt.AlignCenter)
+        next_piece_label.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Raised)
+        next_piece_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.board.set_next_piece_label(next_piece_label)
 
         score_lcd = QLCDNumber(5)
-        score_lcd.setSegmentStyle(QLCDNumber.Filled)
+        score_lcd.setSegmentStyle(QLCDNumber.SegmentStyle.Filled)
         level_lcd = QLCDNumber(2)
-        level_lcd.setSegmentStyle(QLCDNumber.Filled)
+        level_lcd.setSegmentStyle(QLCDNumber.SegmentStyle.Filled)
         lines_lcd = QLCDNumber(5)
-        lines_lcd.setSegmentStyle(QLCDNumber.Filled)
+        lines_lcd.setSegmentStyle(QLCDNumber.SegmentStyle.Filled)
 
         start_button = QPushButton("&Start")
-        start_button.setFocusPolicy(Qt.NoFocus)
+        start_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         quit_button = QPushButton("&Quit")
-        quit_button.setFocusPolicy(Qt.NoFocus)
+        quit_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         pause_button = QPushButton("&Pause")
-        pause_button.setFocusPolicy(Qt.NoFocus)
+        pause_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         start_button.clicked.connect(self.board.start)
         pause_button.clicked.connect(self.board.pause)
-        quit_button.clicked.connect(qApp.quit)
+        quit_button.clicked.connect(qApp.quit)  # noqa: F821
         self.board.score_changed.connect(score_lcd.display)
         self.board.level_changed.connect(level_lcd.display)
         self.board.lines_removed_changed.connect(lines_lcd.display)
@@ -76,7 +77,7 @@ class TetrixWindow(QWidget):
 
     def create_label(self, text):
         lbl = QLabel(text)
-        lbl.setAlignment(Qt.AlignHCenter | Qt.AlignBottom)
+        lbl.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignBottom)
         return lbl
 
 
@@ -106,8 +107,8 @@ class TetrixBoard(QFrame):
         self.level = 0
         self.board = None
 
-        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFrameStyle(QFrame.Shape.Panel | QFrame.Shadow.Sunken)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self._is_started = False
         self._is_paused = False
         self.clear_board()
@@ -134,11 +135,11 @@ class TetrixBoard(QFrame):
 
     def sizeHint(self):
         return QSize(TetrixBoard.board_width * 15 + self.frameWidth() * 2,
-                TetrixBoard.board_height * 15 + self.frameWidth() * 2)
+                     TetrixBoard.board_height * 15 + self.frameWidth() * 2)
 
     def minimum_size_hint(self):
         return QSize(TetrixBoard.board_width * 5 + self.frameWidth() * 2,
-                TetrixBoard.board_height * 5 + self.frameWidth() * 2)
+                     TetrixBoard.board_height * 5 + self.frameWidth() * 2)
 
     @Slot()
     def start(self):
@@ -180,7 +181,7 @@ class TetrixBoard(QFrame):
             rect = self.contentsRect()
 
             if self._is_paused:
-                painter.drawText(rect, Qt.AlignCenter, "Pause")
+                painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, "Pause")
                 return
 
             board_top = rect.bottom() - TetrixBoard.board_height * self.square_height()
@@ -190,16 +191,17 @@ class TetrixBoard(QFrame):
                     shape = self.shape_at(j, TetrixBoard.board_height - i - 1)
                     if shape != Piece.NoShape:
                         self.draw_square(painter,
-                                rect.left() + j * self.square_width(),
-                                board_top + i * self.square_height(), shape)
+                                         rect.left() + j * self.square_width(),
+                                         board_top + i * self.square_height(), shape)
 
             if self._cur_piece.shape() != Piece.NoShape:
                 for i in range(4):
                     x = self._cur_x + self._cur_piece.x(i)
                     y = self._cur_y - self._cur_piece.y(i)
                     self.draw_square(painter, rect.left() + x * self.square_width(),
-                            board_top + (TetrixBoard.board_height - y - 1) * self.square_height(),
-                            self._cur_piece.shape())
+                                     board_top
+                                     + (TetrixBoard.board_height - y - 1) * self.square_height(),
+                                     self._cur_piece.shape())
 
     def keyPressEvent(self, event):
         if not self._is_started or self._is_paused or self._cur_piece.shape() == Piece.NoShape:
@@ -207,17 +209,17 @@ class TetrixBoard(QFrame):
             return
 
         key = event.key()
-        if key == Qt.Key_Left:
+        if key == Qt.Key.Key_Left:
             self.try_move(self._cur_piece, self._cur_x - 1, self._cur_y)
-        elif key == Qt.Key_Right:
+        elif key == Qt.Key.Key_Right:
             self.try_move(self._cur_piece, self._cur_x + 1, self._cur_y)
-        elif key == Qt.Key_Down:
+        elif key == Qt.Key.Key_Down:
             self.try_move(self._cur_piece.rotated_right(), self._cur_x, self._cur_y)
-        elif key == Qt.Key_Up:
+        elif key == Qt.Key.Key_Up:
             self.try_move(self._cur_piece.rotated_left(), self._cur_x, self._cur_y)
-        elif key == Qt.Key_Space:
+        elif key == Qt.Key.Key_Space:
             self.drop_down()
-        elif key == Qt.Key_D:
+        elif key == Qt.Key.Key_D:
             self.one_line_down()
         else:
             super(TetrixBoard, self).keyPressEvent(event)
@@ -234,7 +236,8 @@ class TetrixBoard(QFrame):
             super(TetrixBoard, self).timerEvent(event)
 
     def clear_board(self):
-        self.board = [Piece.NoShape for i in range(TetrixBoard.board_height * TetrixBoard.board_width)]
+        self.board = [
+            Piece.NoShape for _ in range(TetrixBoard.board_height * TetrixBoard.board_width)]
 
     def drop_down(self):
         drop_height = 0
@@ -283,7 +286,7 @@ class TetrixBoard(QFrame):
 
             if line_is_full:
                 num_full_lines += 1
-                for k in range(TetrixBoard.board_height - 1):
+                for k in range(i, TetrixBoard.board_height - 1):
                     for j in range(TetrixBoard.board_width):
                         self.set_shape_at(j, k, self.shape_at(j, k + 1))
 
@@ -328,7 +331,7 @@ class TetrixBoard(QFrame):
             x = self._next_piece.x(i) - self._next_piece.min_x()
             y = self._next_piece.y(i) - self._next_piece.min_y()
             self.draw_square(painter, x * self.square_width(),
-                    y * self.square_height(), self._next_piece.shape())
+                             y * self.square_height(), self._next_piece.shape())
 
         self.nextPieceLabel.setPixmap(pixmap)
 
@@ -349,11 +352,10 @@ class TetrixBoard(QFrame):
 
     def draw_square(self, painter, x, y, shape):
         color_table = [0x000000, 0xCC6666, 0x66CC66, 0x6666CC,
-                      0xCCCC66, 0xCC66CC, 0x66CCCC, 0xDAAA00]
+                       0xCCCC66, 0xCC66CC, 0x66CCCC, 0xDAAA00]
 
         color = QColor(color_table[shape])
-        painter.fillRect(x + 1, y + 1, self.square_width() - 2,
-                self.square_height() - 2, color)
+        painter.fillRect(x + 1, y + 1, self.square_width() - 2, self.square_height() - 2, color)
 
         painter.setPen(color.lighter())
         painter.drawLine(x, y + self.square_height() - 1, x, y)
@@ -361,25 +363,25 @@ class TetrixBoard(QFrame):
 
         painter.setPen(color.darker())
         painter.drawLine(x + 1, y + self.square_height() - 1,
-                x + self.square_width() - 1, y + self.square_height() - 1)
+                         x + self.square_width() - 1, y + self.square_height() - 1)
         painter.drawLine(x + self.square_width() - 1,
-                y + self.square_height() - 1, x + self.square_width() - 1, y + 1)
+                         y + self.square_height() - 1, x + self.square_width() - 1, y + 1)
 
 
-class TetrixPiece(object):
+class TetrixPiece:
     coords_table = (
-        ((0, 0),     (0, 0),     (0, 0),     (0, 0)),
-        ((0, -1),    (0, 0),     (-1, 0),    (-1, 1)),
-        ((0, -1),    (0, 0),     (1, 0),     (1, 1)),
-        ((0, -1),    (0, 0),     (0, 1),     (0, 2)),
-        ((-1, 0),    (0, 0),     (1, 0),     (0, 1)),
-        ((0, 0),     (1, 0),     (0, 1),     (1, 1)),
-        ((-1, -1),   (0, -1),    (0, 0),     (0, 1)),
-        ((1, -1),    (0, -1),    (0, 0),     (0, 1))
+        ((0, 0), (0, 0), (0, 0), (0, 0)),
+        ((0, -1), (0, 0), (-1, 0), (-1, 1)),
+        ((0, -1), (0, 0), (1, 0), (1, 1)),
+        ((0, -1), (0, 0), (0, 1), (0, 2)),
+        ((-1, 0), (0, 0), (1, 0), (0, 1)),
+        ((0, 0), (1, 0), (0, 1), (1, 1)),
+        ((-1, -1), (0, -1), (0, 0), (0, 1)),
+        ((1, -1), (0, -1), (0, 0), (0, 1))
     )
 
     def __init__(self):
-        self.coords = [[0,0] for _ in range(4)]
+        self.coords = [[0, 0] for _ in range(4)]
         self._piece_shape = Piece.NoShape
 
         self.set_shape(Piece.NoShape)

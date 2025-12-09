@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the widgets/richtext/textedit example from Qt v6.x"""
 
@@ -11,7 +12,7 @@ from PySide6.QtWidgets import QApplication
 
 from textedit import TextEdit
 
-import textedit_rc
+import textedit_rc  # noqa: F401
 
 
 if __name__ == '__main__':

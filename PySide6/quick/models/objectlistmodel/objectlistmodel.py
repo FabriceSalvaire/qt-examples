@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from pathlib import Path
 import sys
@@ -8,6 +9,7 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtQuick import QQuickView
 
 # This example illustrates exposing a list of QObjects as a model in QML
+
 
 class DataObject(QObject):
 
@@ -25,7 +27,7 @@ class DataObject(QObject):
     def setName(self, name):
         if name != self._name:
             self._name = name
-            nameChanged.emit()
+            self.nameChanged.emit()
 
     def color(self):
         return self._color
@@ -33,8 +35,7 @@ class DataObject(QObject):
     def setColor(self, color):
         if color != self._color:
             self._color = color
-            colorChanged.emit()
-
+            self.colorChanged.emit()
 
     name = Property(str, name, setName, notify=nameChanged)
     color = Property(str, color, setColor, notify=colorChanged)
@@ -49,7 +50,7 @@ if __name__ == '__main__':
                 DataObject("Item 4", "yellow")]
 
     view = QQuickView()
-    view.setResizeMode(QQuickView.SizeRootObjectToView)
+    view.setResizeMode(QQuickView.ResizeMode.SizeRootObjectToView)
     view.setInitialProperties({"model": dataList})
 
     qml_file = Path(__file__).parent / "view.qml"

@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
@@ -14,6 +15,6 @@ if __name__ == "__main__":
     sheet = SpreadSheet(10, 6)
     sheet.setWindowIcon(QPixmap(":/images/interview.png"))
     sheet.show()
-    sheet.layout().setSizeConstraint(QLayout.SetFixedSize)
+    sheet.layout().setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
 
     sys.exit(app.exec())

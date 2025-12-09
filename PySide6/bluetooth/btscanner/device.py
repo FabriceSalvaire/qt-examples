@@ -1,9 +1,10 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 from PySide6.QtCore import QPoint, Qt, Slot
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QDialog, QListWidgetItem, QListWidget, QMenu
+from PySide6.QtWidgets import QDialog, QListWidgetItem, QMenu
 from PySide6.QtBluetooth import (QBluetoothAddress, QBluetoothDeviceDiscoveryAgent,
                                  QBluetoothDeviceInfo, QBluetoothLocalDevice)
 
@@ -33,7 +34,7 @@ class DeviceDiscoveryDialog(QDialog):
 
         self.host_mode_state_changed(self._local_device.hostMode())
         # add context menu for devices to be able to pair device
-        self._ui.list.setContextMenuPolicy(Qt.CustomContextMenu)
+        self._ui.list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self._ui.list.customContextMenuRequested.connect(self.display_pairing_menu)
         self._local_device.pairingFinished.connect(self.pairing_done)
 
@@ -45,11 +46,11 @@ class DeviceDiscoveryDialog(QDialog):
         if not items:
             item = QListWidgetItem(label)
             pairing_status = self._local_device.pairingStatus(info.address())
-            if (pairing_status == QBluetoothLocalDevice.Paired
-                or pairing_status == QBluetoothLocalDevice.AuthorizedPaired):
-                item.setForeground(QColor(Qt.green))
+            if (pairing_status == QBluetoothLocalDevice.Pairing.Paired
+                    or pairing_status == QBluetoothLocalDevice.Pairing.AuthorizedPaired):
+                item.setForeground(QColor(Qt.GlobalColor.green))
             else:
-                item.setForeground(QColor(Qt.black))
+                item.setForeground(QColor(Qt.GlobalColor.black))
             self._ui.list.addItem(item)
 
     @Slot()
@@ -77,9 +78,9 @@ class DeviceDiscoveryDialog(QDialog):
     @Slot(bool)
     def on_discoverable_clicked(self, clicked):
         if clicked:
-            self._local_device.setHostMode(QBluetoothLocalDevice.HostDiscoverable)
+            self._local_device.setHostMode(QBluetoothLocalDevice.HostMode.HostDiscoverable)
         else:
-            self._local_device.setHostMode(QBluetoothLocalDevice.HostConnectable)
+            self._local_device.setHostMode(QBluetoothLocalDevice.HostMode.HostConnectable)
 
     @Slot(bool)
     def on_power_clicked(self, clicked):
@@ -90,10 +91,10 @@ class DeviceDiscoveryDialog(QDialog):
 
     @Slot("QBluetoothLocalDevice::HostMode")
     def host_mode_state_changed(self, mode):
-        self._ui.power.setChecked(mode != QBluetoothLocalDevice.HostPoweredOff)
-        self._ui.discoverable.setChecked(mode == QBluetoothLocalDevice.HostDiscoverable)
+        self._ui.power.setChecked(mode != QBluetoothLocalDevice.HostMode.HostPoweredOff)
+        self._ui.discoverable.setChecked(mode == QBluetoothLocalDevice.HostMode.HostDiscoverable)
 
-        on = mode != QBluetoothLocalDevice.HostPoweredOff
+        on = mode != QBluetoothLocalDevice.HostMode.HostPoweredOff
         self._ui.scan.setEnabled(on)
         self._ui.discoverable.setEnabled(on)
 
@@ -123,7 +124,8 @@ class DeviceDiscoveryDialog(QDialog):
         items = self._ui.list.findItems(address.toString(), Qt.MatchContains)
 
         color = QColor(Qt.red)
-        if pairing == QBluetoothLocalDevice.Paired or pairing == QBluetoothLocalDevice.AuthorizedPaired:
+        if (pairing == QBluetoothLocalDevice.Paired
+                or pairing == QBluetoothLocalDevice.AuthorizedPaired):
             color = QColor(Qt.green)
         for item in items:
             item.setForeground(color)

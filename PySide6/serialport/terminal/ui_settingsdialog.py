@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'settingsdialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.0
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -24,7 +24,7 @@ class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         if not SettingsDialog.objectName():
             SettingsDialog.setObjectName(u"SettingsDialog")
-        SettingsDialog.resize(281, 262)
+        SettingsDialog.resize(392, 386)
         self.gridLayout_3 = QGridLayout(SettingsDialog)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.parametersBox = QGroupBox(SettingsDialog)
@@ -128,7 +128,7 @@ class Ui_SettingsDialog(object):
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalSpacer = QSpacerItem(96, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(96, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 

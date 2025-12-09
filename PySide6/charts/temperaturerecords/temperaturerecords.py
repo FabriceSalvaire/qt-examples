@@ -1,5 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 """PySide6 port of the Temperature Records example from Qt v5.x"""
 
@@ -47,7 +48,7 @@ class MainWindow(QMainWindow):
         chart.legend().setAlignment(Qt.AlignBottom)
 
         chart_view = QChartView(chart)
-        chart_view.setRenderHint(QPainter.Antialiasing)
+        chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         self.setCentralWidget(chart_view)
 

@@ -1,6 +1,7 @@
 # Copyright (C) 2010 velociraptor Genjix <aphidia@hotmail.com>
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+from __future__ import annotations
 
 import sys
 
@@ -14,26 +15,26 @@ from PySide6.QtStateMachine import (QEventTransition, QFinalState,
 
 class MovementTransition(QEventTransition):
     def __init__(self, window):
-        super().__init__(window, QEvent.KeyPress)
+        super().__init__(window, QEvent.Type.KeyPress)
         self.window = window
 
     def eventTest(self, event):
-        if (event.type() == QEvent.StateMachineWrapped and
-                event.event().type() == QEvent.KeyPress):
+        if (event.type() == QEvent.Type.StateMachineWrapped
+                and event.event().type() == QEvent.Type.KeyPress):
             key = event.event().key()
-            return (key == Qt.Key_2 or key == Qt.Key_8 or
-                    key == Qt.Key_6 or key == Qt.Key_4)
+            return (key == Qt.Key.Key_2 or key == Qt.Key.Key_8
+                    or key == Qt.Key.Key_6 or key == Qt.Key.Key_4)
         return False
 
     def onTransition(self, event):
         key = event.event().key()
-        if key == Qt.Key_4:
+        if key == Qt.Key.Key_4:
             self.window.move_player(self.window.left)
-        if key == Qt.Key_8:
+        if key == Qt.Key.Key_8:
             self.window.move_player(self.window.Up)
-        if key == Qt.Key_6:
+        if key == Qt.Key.Key_6:
             self.window.move_player(self.window.right)
-        if key == Qt.Key_2:
+        if key == Qt.Key.Key_2:
             self.window.move_player(self.window.down)
 
 
@@ -74,8 +75,8 @@ class MainWindow(QMainWindow):
         for x in range(self.width):
             column = []
             for y in range(self.height):
-                if (x == 0 or x == self.width - 1 or y == 0 or
-                        y == self.height - 1 or generator.bounded(0, 40) == 0):
+                if (x == 0 or x == self.width - 1 or y == 0
+                        or y == self.height - 1 or generator.bounded(0, 40) == 0):
                     column.append('#')
                 else:
                     column.append('.')
@@ -99,21 +100,21 @@ class MainWindow(QMainWindow):
         quit_state = QState(machine)
         quit_state.assignProperty(self, 'status', 'Really quit(y/n)?')
 
-        yes_transition = QKeyEventTransition(self, QEvent.KeyPress, Qt.Key_Y)
+        yes_transition = QKeyEventTransition(self, QEvent.Type.KeyPress, Qt.Key.Key_Y)
         self._final_state = QFinalState(machine)
         yes_transition.setTargetState(self._final_state)
         quit_state.addTransition(yes_transition)
 
-        no_transition = QKeyEventTransition(self, QEvent.KeyPress, Qt.Key_N)
+        no_transition = QKeyEventTransition(self, QEvent.Type.KeyPress, Qt.Key.Key_N)
         no_transition.setTargetState(input_state)
         quit_state.addTransition(no_transition)
 
-        quit_transition = QKeyEventTransition(self, QEvent.KeyPress, Qt.Key_Q)
+        quit_transition = QKeyEventTransition(self, QEvent.Type.KeyPress, Qt.Key.Key_Q)
         quit_transition.setTargetState(quit_state)
         input_state.addTransition(quit_transition)
 
         machine.setInitialState(input_state)
-        machine.finished.connect(qApp.quit)
+        machine.finished.connect(qApp.quit)  # noqa: F821
         machine.start()
 
     def sizeHint(self):
@@ -127,8 +128,8 @@ class MainWindow(QMainWindow):
             font_height = metrics.height()
             font_width = metrics.horizontalAdvance('X')
 
-            painter.fillRect(self.rect(), Qt.black)
-            painter.setPen(Qt.white)
+            painter.fillRect(self.rect(), Qt.GlobalColor.black)
+            painter.setPen(Qt.GlobalColor.white)
 
             y_pos = font_height
             painter.drawText(QPoint(0, y_pos), self.status)
